@@ -1,0 +1,40 @@
+[project]
+name = "clawshire-cli"
+version = "0.1.0a3"
+description = "ClawShire CLI for notice query, annual report query, and annual analysis"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28.1",
+    "tomli-w>=1.2.0",
+]
+
+[project.scripts]
+clawshire = "clawshire_cli.main:main"
+cs = "clawshire_cli.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clawshire_cli*", "clawshire_sdk*"]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[[tool.uv.index]]
+name = "memect"
+url = "http://192.168.41.95:8141/memect/dev/+simple/"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --tb=short"
