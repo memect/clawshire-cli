@@ -22,22 +22,26 @@ class CliConfig:
 def load_config() -> CliConfig:
     config = CliConfig()
 
-    if CONFIG_PATH.exists():
-        data = tomllib.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-        config.base_url = str(data.get("base_url") or config.base_url)
-        config.api_key = data.get("api_key") or config.api_key
-        config.output = str(data.get("output") or config.output)
-        timeout = data.get("timeout")
-        if timeout is not None:
-            config.timeout = float(timeout)
-
+    # 环境变量作为默认值
     config.base_url = os.getenv("CLAWSHIRE_BASE_URL", config.base_url)
     config.api_key = os.getenv("CLAWSHIRE_API_KEY", config.api_key)
     config.output = os.getenv("CLAWSHIRE_OUTPUT", config.output)
-
     env_timeout = os.getenv("CLAWSHIRE_TIMEOUT")
     if env_timeout:
         config.timeout = float(env_timeout)
+
+    # 配置文件优先级高于环境变量
+    if CONFIG_PATH.exists():
+        data = tomllib.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        if "base_url" in data:
+            config.base_url = str(data["base_url"])
+        if "api_key" in data:
+            config.api_key = data["api_key"]
+        if "output" in data:
+            config.output = str(data["output"])
+        if "timeout" in data:
+            config.timeout = float(data["timeout"])
+
     return config
 
 
