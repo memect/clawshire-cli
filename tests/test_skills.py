@@ -121,6 +121,10 @@ def test_skill_frontmatter_and_shared_rules_are_valid():
         assert frontmatter["name"] == skill_dir.name
         assert frontmatter["version"] == "1.0.0"
         assert frontmatter["description"]
+        assert isinstance(frontmatter.get("triggers"), list)
+        assert frontmatter.get("triggers"), f"{skill_md} missing triggers"
+        assert str(frontmatter.get("invocable")).lower() == "true"
+        assert frontmatter.get("argument-hint")
 
         metadata = frontmatter.get("metadata")
         assert isinstance(metadata, dict), f"{skill_md} missing metadata block"
@@ -128,6 +132,9 @@ def test_skill_frontmatter_and_shared_rules_are_valid():
         assert isinstance(requires, dict), f"{skill_md} missing requires block"
         assert requires.get("bins") == ["clawshire"]
         assert metadata.get("cliHelp", "").startswith("clawshire ")
+        assert "## Agent Invariants" in text
+        assert "## Quick Reference" in text
+        assert "## Decision Tree" in text
 
         if skill_dir.name != "clawshire-shared":
             assert "../clawshire-shared/SKILL.md" in text
