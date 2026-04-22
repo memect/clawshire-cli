@@ -47,12 +47,13 @@ def load_config() -> CliConfig:
 
 def save_config(config: CliConfig) -> Path:
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    data = {
+    data: dict = {
         "base_url": config.base_url,
-        "api_key": config.api_key,
         "output": config.output,
         "timeout": config.timeout,
     }
+    if config.api_key is not None:
+        data["api_key"] = config.api_key
     CONFIG_PATH.write_text(tomli_w.dumps(data), encoding="utf-8")
     return CONFIG_PATH
 
