@@ -1,7 +1,21 @@
+from pathlib import Path
+import tomllib
+
 from clawshire_cli.main import build_parser, get_cli_version, run
 from clawshire_cli.commands.annual_analysis import _attach_follow_up_command
+from clawshire_cli.commands.update import (
+    _build_update_command,
+    _confirm_upgrade,
+    _read_latest_version,
+)
 from clawshire_cli.output import render
 from clawshire_sdk.domains.annual_reports import AnnualReportsDomain
+
+
+def expected_cli_version() -> str:
+    pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    data = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+    return data["project"]["version"]
 
 
 def test_build_parser_supports_filings_search():
@@ -62,11 +76,48 @@ def test_build_parser_supports_auth_set_key():
     assert args.api_key == "sk-test"
 
 
+def test_build_parser_supports_auth_status():
+    parser = build_parser()
+    args = parser.parse_args(["auth", "status"])
+    assert args.command == "auth"
+    assert args.auth_command == "status"
+
+
+def test_build_parser_supports_auth_check():
+    parser = build_parser()
+    args = parser.parse_args(["auth", "check"])
+    assert args.command == "auth"
+    assert args.auth_command == "check"
+
+
+def test_build_parser_supports_auth_logout():
+    parser = build_parser()
+    args = parser.parse_args(["auth", "logout"])
+    assert args.command == "auth"
+    assert args.auth_command == "logout"
+
+
 def test_build_parser_supports_user_info():
     parser = build_parser()
     args = parser.parse_args(["user", "info"])
     assert args.command == "user"
     assert args.user_command == "info"
+
+
+def test_build_parser_supports_update():
+    parser = build_parser()
+    args = parser.parse_args(["update", "--manager", "pip", "--dry-run"])
+    assert args.command == "update"
+    assert args.manager == "pip"
+    assert args.dry_run is True
+
+
+def test_build_parser_supports_upgrade_alias():
+    parser = build_parser()
+    args = parser.parse_args(["upgrade", "--manager", "pip", "-y"])
+    assert args.command == "upgrade"
+    assert args.manager == "pip"
+    assert args.yes is True
 
 
 def test_build_parser_supports_version():
@@ -97,8 +148,40 @@ def test_attach_follow_up_command_for_task_id():
     assert data["next_command"] == "clawshire annual-analysis get 74"
 
 
+def test_build_update_command_for_pip():
+    assert _build_update_command("pip")[-5:] == ["-m", "pip", "install", "--upgrade", "clawshire-cli"]
+
+
+def test_confirm_upgrade_yes(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    assert _confirm_upgrade(["uv", "tool", "upgrade", "clawshire-cli"]) is True
+
+
+def test_confirm_upgrade_no(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    assert _confirm_upgrade(["uv", "tool", "upgrade", "clawshire-cli"]) is False
+
+
+def test_read_latest_version_from_pypi(monkeypatch):
+    monkeypatch.setattr(
+        "clawshire_cli.commands.update._fetch_pypi_metadata",
+        lambda: {"info": {"version": "0.1.0a5"}},
+    )
+    assert _read_latest_version() == ("0.1.0a5", "pypi")
+
+
+def test_read_latest_version_handles_unpublished(monkeypatch):
+    from clawshire_sdk import ClawShireApiError
+
+    def raise_exc():
+        raise ClawShireApiError("not found", status_code=404)
+
+    monkeypatch.setattr("clawshire_cli.commands.update._fetch_pypi_metadata", raise_exc)
+    assert _read_latest_version() == (None, "pypi-not-published")
+
+
 def test_get_cli_version():
-    assert get_cli_version() == "0.1.0a2"
+    assert get_cli_version() == expected_cli_version()
 
 
 def test_run_without_args_shows_welcome(capsys):
@@ -114,7 +197,7 @@ def test_run_version(capsys):
     exit_code = run(["version"])
     out = capsys.readouterr().out.strip()
     assert exit_code == 0
-    assert out == "0.1.0a2"
+    assert out == expected_cli_version()
 
 
 def test_render_json(capsys):

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
-from clawshire_cli.config import load_config, mask_api_key, save_config
+from clawshire_cli.config import CONFIG_PATH, load_config, mask_api_key, save_config
 from clawshire_cli.context import build_client, resolve_output
 from clawshire_cli.output import render
+from clawshire_sdk import ClawShireApiError, ClawShireAuthError, ClawShireNetworkError
 
 
 def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
@@ -18,8 +19,17 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     clear_key = auth_subparsers.add_parser("clear-key", help="清除本地保存的 API Key")
     clear_key.set_defaults(handler=_handle_clear_key)
 
+    logout = auth_subparsers.add_parser("logout", help="退出登录并清除本地保存的 API Key")
+    logout.set_defaults(handler=_handle_clear_key)
+
     show = auth_subparsers.add_parser("show", help="查看当前认证配置")
     show.set_defaults(handler=_handle_show)
+
+    status = auth_subparsers.add_parser("status", help="查看当前认证状态")
+    status.set_defaults(handler=_handle_status)
+
+    check = auth_subparsers.add_parser("check", help="检查当前认证是否可用")
+    check.set_defaults(handler=_handle_check)
 
     whoami = auth_subparsers.add_parser("whoami", help="检查当前 API Key")
     whoami.set_defaults(handler=_handle_whoami)
@@ -56,8 +66,56 @@ def _handle_show(args: Namespace) -> int:
     return 0
 
 
+def _handle_status(args: Namespace) -> int:
+    source = _resolve_api_key_source()
+    config = load_config()
+    payload = {
+        "base_url": config.base_url,
+        "config_path": str(CONFIG_PATH),
+        "api_key_source": source,
+        "api_key": mask_api_key(config.api_key),
+        "configured": bool(config.api_key),
+        "authenticated": False,
+        "message": "未配置 API Key",
+    }
+    if not config.api_key:
+        render(payload, output=resolve_output(args))
+        return 1
+
+    client = build_client(args)
+    try:
+        client.get("/api/v1/api-key/info", auth_required=True)
+        payload["authenticated"] = True
+        payload["message"] = "认证可用"
+    except (ClawShireAuthError, ClawShireApiError, ClawShireNetworkError) as exc:
+        payload["message"] = str(exc)
+
+    render(payload, output=resolve_output(args))
+    return 0 if payload["authenticated"] else 1
+
+
+def _handle_check(args: Namespace) -> int:
+    client = build_client(args)
+    try:
+        client.get("/api/v1/api-key/info", auth_required=True)
+        print("ok")
+        return 0
+    except (ClawShireAuthError, ClawShireApiError, ClawShireNetworkError):
+        return 1
+
+
 def _handle_whoami(args: Namespace) -> int:
     client = build_client(args)
     data = client.get("/api/v1/api-key/info", auth_required=True)
     render(data, output=resolve_output(args))
     return 0
+
+
+def _resolve_api_key_source() -> str:
+    import os
+
+    if os.getenv("CLAWSHIRE_API_KEY"):
+        return "env"
+    if CONFIG_PATH.exists():
+        return "config"
+    return "none"

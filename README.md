@@ -2,7 +2,41 @@
 
 独立可安装的 ClawShire 命令行客户端。
 
-## 安装
+## Hello World
+
+要求：`Python >= 3.12`
+
+推荐先用 `uv` 创建一个独立环境，避免污染本地其他 Python 环境：
+
+```bash
+mkdir clawshire-demo && cd clawshire-demo
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip install clawshire-cli
+```
+
+然后：
+
+1. 访问 [https://clawshire.cn](https://clawshire.cn) 注册/登录
+2. 在控制台创建 API Key
+3. 执行下面几条命令
+
+```bash
+clawshire auth set-key <your_api_key>
+clawshire auth status
+clawshire user info
+clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
+```
+
+如果想马上试一个需要认证的能力：
+
+```bash
+clawshire annual-report latest --year 2025 --keyword 平安银行
+```
+
+## 安装与升级
+
+推荐使用 `Python 3.12` 或 `Python 3.13`。
 
 ```bash
 pip install clawshire-cli
@@ -27,11 +61,125 @@ clawshire --help
 cs --help
 ```
 
+升级到最新版本：
+
+```bash
+clawshire update
+clawshire upgrade
+```
+
+如果想先看将执行什么命令：
+
+```bash
+clawshire update --dry-run
+clawshire --output json update --dry-run
+```
+
+如果想跳过确认提示：
+
+```bash
+clawshire update -y
+```
+
+说明：
+
+- `update` 会优先检查 PyPI 上的最新版本，再决定是否执行升级
+- `update` 适合通过 `uv tool`、`pipx`、`pip` 安装的场景
+- `upgrade` 是 `update` 的等价别名
+- 如果你当前是在源码目录里开发，优先继续使用你原来的开发安装方式
+
+## SDK Quick Start
+
+`clawshire-cli` 同时包含 Python SDK，安装 CLI 后即可直接在代码中使用：
+
+```python
+from clawshire_sdk import ClawShireClient
+
+client = ClawShireClient(
+    base_url="https://api.clawshire.cn",
+    api_key="your_api_key",
+)
+
+reports = client.annual.latest(
+    year=2025,
+    keyword="平安银行",
+    page_size=1,
+)
+
+print(reports["items"][0]["pdf_url"])
+```
+
+完整 SDK 用法见：
+
+```text
+docs/sdk-usage.md
+```
+
+## Skills
+
+`clawshire-cli` 仓库同时维护配套 Skills，目录位于：
+
+```text
+skills/
+```
+
+当前已提供：
+
+1. `clawshire-shared`
+2. `clawshire-data-query`
+3. `clawshire-annual-report`
+4. `clawshire-annual-analysis`
+
+这些 Skills 的定位不是重复实现底层请求，而是复用 `clawshire` CLI，把公告查询、年报定位、年报分析等能力组织成更适合 Agent 调用的工作流。
+
+推荐按**整个仓库**安装 skills bundle，而不是单独安装某个 skill 子目录。
+
+示意安装方式：
+
+```bash
+npx skills add <owner>/clawshire-cli -y -g
+```
+
+这意味着：
+
+- `skills/` 下的多个 Skill 会一起分发
+- `clawshire-shared` 可以作为共享规则层存在
+- 不需要假设用户只安装单个 skill 子目录
+
+## Testing
+
+本地完整用户流程测试说明见：
+
+```text
+docs/local-e2e.md
+```
+
+Python SDK 使用说明见：
+
+```text
+docs/sdk-usage.md
+```
+
+一键检查脚本：
+
+```bash
+./scripts/e2e_local_check.sh
+```
+
+该脚本默认执行：
+
+1. 测试集
+2. CLI 基础命令检查
+3. skills 目录结构检查
+
+若环境中存在 `CLAWSHIRE_API_KEY`，还会继续执行真实线上链路验证，包括 `auth check`、`user info`、`notice stock`、`annual-report latest`、`annual-analysis company`。
+
 如果你只想快速确认安装成功，先跑：
 
 ```bash
 clawshire --help
 clawshire auth --help
+clawshire update --dry-run
 clawshire user info --api-key <your_api_key>
 ```
 
@@ -53,6 +201,23 @@ clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20
 clawshire annual-report latest --year 2025 --keyword 平安银行
 ```
 
+## 如何获取 API Key
+
+1. 访问 [https://clawshire.cn](https://clawshire.cn) 并注册/登录你的 ClawShire 账号
+2. 进入平台控制台中的 API Key 页面创建一个新 Key
+3. 复制创建后的 Key，并立即保存到安全位置
+4. 回到终端执行：
+
+```bash
+clawshire auth set-key <your_api_key>
+```
+
+如果你只想临时使用，也可以不落盘，直接通过环境变量传入：
+
+```bash
+export CLAWSHIRE_API_KEY="<your_api_key>"
+```
+
 ## 先配置 API Key
 
 建议先把 API Key 保存到本地，这样后续不用每次手动加 `--api-key`。
@@ -60,6 +225,8 @@ clawshire annual-report latest --year 2025 --keyword 平安银行
 ```bash
 clawshire auth set-key <your_api_key>
 clawshire auth show
+clawshire auth status
+clawshire auth check
 clawshire user info
 ```
 
@@ -73,6 +240,7 @@ clawshire --api-key <your_api_key> user info
 
 ```bash
 clawshire auth clear-key
+clawshire auth logout
 ```
 
 ## 命令
@@ -95,7 +263,10 @@ clawshire auth clear-key
 |------|------|------------------|------|
 | 保存 Key | `clawshire auth set-key <key>` | 否 | 保存本地 API Key |
 | 查看认证配置 | `clawshire auth show` | 否 | 查看当前 base_url、key 掩码、输出格式、超时 |
+| 查看认证状态 | `clawshire auth status` | 否/建议有 | 查看当前 key 来源、是否已配置、是否认证可用 |
+| 检查认证可用性 | `clawshire auth check` | 是 | 用退出码检查当前认证是否可用，`0=ok` |
 | 清除 Key | `clawshire auth clear-key` | 否 | 清除本地保存的 API Key |
+| 退出登录 | `clawshire auth logout` | 否 | `clear-key` 的用户友好别名 |
 | 检查当前 Key | `clawshire auth whoami` | 是 | 校验当前 API Key 是否有效 |
 | 用户信息 | `clawshire user info` | 是 | 查询余额、免费次数、配额等用户信息 |
 | 公告按日期查询 | `clawshire notice search --start-date <d> --end-date <d> --keyword 603402` | 否/建议有 | 按日期范围查询公告，示例默认限定证券代码避免结果过大 |
@@ -120,6 +291,7 @@ clawshire auth clear-key
 
 ```bash
 clawshire auth --help
+clawshire update --help
 clawshire user --help
 clawshire notice --help
 clawshire annual-report --help
@@ -223,6 +395,7 @@ clawshire annual-analysis get <task_id_or_job_id>
 
 ```bash
 clawshire auth show
+clawshire auth status
 clawshire auth clear-key
 clawshire auth set-key <your_api_key>
 clawshire user info
@@ -244,6 +417,7 @@ echo $CLAWSHIRE_API_KEY
 
 ```bash
 clawshire auth set-key <your_api_key>
+clawshire auth status
 clawshire user info
 ```
 

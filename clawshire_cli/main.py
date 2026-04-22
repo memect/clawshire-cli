@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import argparse
 import sys
+import tomllib
+from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version as package_version
+from pathlib import Path
 
-from clawshire_cli.commands import annual_analysis, annual_report, auth, notice, user
+from clawshire_cli.commands import annual_analysis, annual_report, auth, notice, update, user
 from clawshire_sdk import (
     ClawShireApiError,
     ClawShireAuthError,
@@ -31,13 +34,37 @@ def build_parser() -> argparse.ArgumentParser:
     annual_report.register(subparsers)
     annual_analysis.register(subparsers)
     auth.register(subparsers)
+    update.register(subparsers)
     user.register(subparsers)
     version_parser = subparsers.add_parser("version", help="查看 CLI 版本")
     version_parser.set_defaults(handler=handle_version)
     return parser
 
 
+def _find_pyproject_path() -> Path | None:
+    current = Path(__file__).resolve().parent
+    for candidate_dir in (current, *current.parents):
+        candidate = candidate_dir / "pyproject.toml"
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _read_version_from_pyproject() -> str | None:
+    pyproject_path = _find_pyproject_path()
+    if pyproject_path is None:
+        return None
+    data = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
+    project = data.get("project", {})
+    version = project.get("version")
+    return str(version) if version else None
+
+
+@lru_cache(maxsize=1)
 def get_cli_version() -> str:
+    pyproject_version = _read_version_from_pyproject()
+    if pyproject_version:
+        return pyproject_version
     try:
         return package_version("clawshire-cli")
     except PackageNotFoundError:
@@ -56,6 +83,7 @@ def render_welcome() -> None:
     print("  clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402")
     print("  clawshire annual-report latest --year 2025 --keyword 平安银行")
     print("  clawshire annual-analysis company 000001 --year 2025")
+    print("  clawshire update --dry-run")
     print("")
     print("更多帮助:")
     print("  clawshire --help")
@@ -64,6 +92,7 @@ def render_welcome() -> None:
     print("  clawshire notice --help")
     print("  clawshire annual-report --help")
     print("  clawshire annual-analysis --help")
+    print("  clawshire update --help")
 
 
 def handle_version(_: argparse.Namespace) -> int:
@@ -72,7 +101,8 @@ def handle_version(_: argparse.Namespace) -> int:
 
 
 def run(argv: list[str] | None = None) -> int:
-    argv = list(argv or sys.argv[1:])
+    argv = sys.argv[1:] if argv is None else argv
+    argv = list(argv)
     if not argv:
         render_welcome()
         return 0
