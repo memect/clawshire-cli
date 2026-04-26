@@ -1,4 +1,5 @@
 from pathlib import Path
+import base64
 import tomllib
 
 from clawshire_cli.main import build_parser, get_cli_version, run
@@ -9,6 +10,7 @@ from clawshire_cli.commands.update import (
     _read_latest_version,
 )
 from clawshire_cli.output import render
+from clawshire_sdk import ClawShireClient
 from clawshire_sdk.domains.annual_reports import AnnualReportsDomain
 
 
@@ -182,6 +184,34 @@ def test_read_latest_version_handles_unpublished(monkeypatch):
 
 def test_get_cli_version():
     assert get_cli_version() == expected_cli_version()
+
+
+def test_client_build_headers_include_agent_attribution(monkeypatch):
+    monkeypatch.setenv("CLAWSHIRE_CLIENT", "skill")
+    monkeypatch.setenv("CLAWSHIRE_AGENT_NAME", "research-agent")
+    monkeypatch.setenv("CLAWSHIRE_RATIONALE", "查询候选公告以判断风险")
+    monkeypatch.setenv("CLAWSHIRE_TRACE_ID", "tr-test")
+    client = ClawShireClient(base_url="https://api.clawshire.cn", api_key="sk-test", client_version="test")
+
+    headers = client._build_headers(auth_required=True)
+
+    assert headers["User-Agent"] == "clawshire-skill/test"
+    assert headers["X-ClawShire-Client"] == "skill"
+    assert headers["X-ClawShire-Client-Version"] == "test"
+    assert headers["X-ClawShire-Agent-Name"] == "research-agent"
+    assert base64.urlsafe_b64decode(headers["X-ClawShire-Rationale-B64"]).decode("utf-8") == "查询候选公告以判断风险"
+    assert headers["X-Trace-ID"] == "tr-test"
+
+
+def test_client_build_headers_encode_non_ascii_rationale(monkeypatch):
+    monkeypatch.setenv("CLAWSHIRE_RATIONALE", "查询候选公告以判断风险")
+    client = ClawShireClient(base_url="https://api.clawshire.cn", client_version="test")
+
+    headers = client._build_headers(auth_required=False)
+
+    encoded = headers["X-ClawShire-Rationale-B64"]
+    assert base64.urlsafe_b64decode(encoded).decode("utf-8") == "查询候选公告以判断风险"
+    assert "X-ClawShire-Rationale" not in headers
 
 
 def test_run_without_args_shows_welcome(capsys):

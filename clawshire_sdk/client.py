@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import base64
+import os
 from pathlib import Path
 from typing import Any
 
 import httpx
+from importlib.metadata import PackageNotFoundError, version as package_version
 
 from clawshire_sdk.domains import AnnualReportsDomain, FilingsDomain
 from clawshire_sdk.errors import (
@@ -21,10 +24,20 @@ class ClawShireClient:
         base_url: str,
         api_key: str | None = None,
         timeout: float = 30.0,
+        client_name: str | None = None,
+        client_version: str | None = None,
+        agent_name: str | None = None,
+        rationale: str | None = None,
+        trace_id: str | None = None,
     ):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.timeout = timeout
+        self.client_name = client_name or os.getenv("CLAWSHIRE_CLIENT") or "cli"
+        self.client_version = client_version or os.getenv("CLAWSHIRE_CLIENT_VERSION") or _read_package_version()
+        self.agent_name = agent_name or os.getenv("CLAWSHIRE_AGENT_NAME")
+        self.rationale = rationale or os.getenv("CLAWSHIRE_RATIONALE")
+        self.trace_id = trace_id or os.getenv("CLAWSHIRE_TRACE_ID")
         self.filings = FilingsDomain(self)
         self.annual = AnnualReportsDomain(self)
 
@@ -129,7 +142,23 @@ class ClawShireClient:
         return target
 
     def _build_headers(self, *, auth_required: bool) -> dict[str, str]:
-        headers: dict[str, str] = {"Accept": "application/json"}
+        headers: dict[str, str] = {
+            "Accept": "application/json",
+            "User-Agent": f"clawshire-{self.client_name}/{self.client_version}",
+            "X-ClawShire-Client": self.client_name,
+            "X-ClawShire-Client-Version": self.client_version,
+        }
+        if self.agent_name:
+            headers["X-ClawShire-Agent-Name"] = self.agent_name
+        if self.rationale:
+            try:
+                self.rationale.encode("ascii")
+                headers["X-ClawShire-Rationale"] = self.rationale
+            except UnicodeEncodeError:
+                encoded = base64.urlsafe_b64encode(self.rationale.encode("utf-8")).decode("ascii")
+                headers["X-ClawShire-Rationale-B64"] = encoded
+        if self.trace_id:
+            headers["X-Trace-ID"] = self.trace_id
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         elif auth_required:
@@ -151,3 +180,10 @@ class ClawShireClient:
                 if isinstance(value, str) and value.strip():
                     return value
         return fallback
+
+
+def _read_package_version() -> str:
+    try:
+        return package_version("clawshire-cli")
+    except PackageNotFoundError:
+        return "unknown"
