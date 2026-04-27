@@ -29,6 +29,7 @@ class ClawShireClient:
         agent_name: str | None = None,
         rationale: str | None = None,
         trace_id: str | None = None,
+        extra_headers: dict[str, str] | None = None,
     ):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
@@ -38,7 +39,9 @@ class ClawShireClient:
         self.agent_name = agent_name or os.getenv("CLAWSHIRE_AGENT_NAME")
         self.rationale = rationale or os.getenv("CLAWSHIRE_RATIONALE")
         self.trace_id = trace_id or os.getenv("CLAWSHIRE_TRACE_ID")
+        self.extra_headers = extra_headers or {}
         self.filings = FilingsDomain(self)
+        self.notice = self.filings
         self.annual = AnnualReportsDomain(self)
 
     def get(
@@ -159,6 +162,7 @@ class ClawShireClient:
                 headers["X-ClawShire-Rationale-B64"] = encoded
         if self.trace_id:
             headers["X-Trace-ID"] = self.trace_id
+        headers.update(self.extra_headers)
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         elif auth_required:
