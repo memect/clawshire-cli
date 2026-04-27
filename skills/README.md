@@ -36,7 +36,7 @@ skill-name/
 推荐安装整个仓库：
 
 ```bash
-npx skills add <owner>/clawshire-cli -y -g
+npx skills add memect/clawshire-cli -y -g
 ```
 
 这类安装方式下，`skills/` 下的多个技能会一起进入本地环境，因此 `clawshire-shared` 这类共享技能可以作为 bundle 中的公共规则层存在。

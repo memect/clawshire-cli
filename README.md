@@ -5,6 +5,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/memect/clawshire-cli)](https://github.com/memect/clawshire-cli/issues)
+[![GitHub stars](https://img.shields.io/github/stars/memect/clawshire-cli)](https://github.com/memect/clawshire-cli)
 
 **clawshire-cli** 是 ClawShire 开源的命令行工具，支持人类用户和 AI Agent 在终端查询 A 股上市公司公告与年报数据。
 
@@ -87,7 +88,7 @@ clawshire auth check   # 退出码 0 = 认证可用
 推荐安装配套 Skills bundle，让 Agent 直接调用工作流：
 
 ```bash
-npx skills add <owner>/clawshire-cli -y -g
+npx skills add memect/clawshire-cli -y -g
 ```
 
 ---
@@ -244,7 +245,7 @@ SDK 暴露两组域能力：
 推荐按整个仓库安装 skills bundle：
 
 ```bash
-npx skills add <owner>/clawshire-cli -y -g
+npx skills add memect/clawshire-cli -y -g
 ```
 
 Skills 复用 `clawshire` CLI，将公告查询、年报定位、年报分析组织成适合 Agent 调用的工作流，而不是各自维护独立 HTTP 脚本。
