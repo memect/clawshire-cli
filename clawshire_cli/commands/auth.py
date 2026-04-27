@@ -10,7 +10,8 @@ from clawshire_sdk import ClawShireApiError, ClawShireAuthError, ClawShireNetwor
 
 def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     parser = subparsers.add_parser("auth", help="认证与连通性检查")
-    auth_subparsers = parser.add_subparsers(dest="auth_command", required=True)
+    parser.set_defaults(handler=_handle_interactive)
+    auth_subparsers = parser.add_subparsers(dest="auth_command")
 
     set_key = auth_subparsers.add_parser("set-key", help="保存 API Key 到本地配置")
     set_key.add_argument("api_key", help="ClawShire API Key")
@@ -33,6 +34,28 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
 
     whoami = auth_subparsers.add_parser("whoami", help="检查当前 API Key")
     whoami.set_defaults(handler=_handle_whoami)
+
+
+def _handle_interactive(args: Namespace) -> int:
+    config = load_config()
+    if config.api_key:
+        print(f"当前 API Key: {mask_api_key(config.api_key)}")
+        print("已配置，可直接使用。如需更换，请输入新 Key（直接回车跳过）：")
+        key = input("Enter API Key: ").strip()
+        if not key:
+            return 0
+    else:
+        print("欢迎使用 ClawShire CLI！")
+        print("请访问 https://clawshire.cn 注册并获取 API Key。")
+        key = input("Enter API Key: ").strip()
+        if not key:
+            print("未输入 API Key，已跳过。")
+            return 1
+    config.api_key = key
+    path = save_config(config)
+    print(f"API Key 已保存到 {path}")
+    print(f"当前 Key: {mask_api_key(key)}")
+    return 0
 
 
 def _handle_set_key(args: Namespace) -> int:
