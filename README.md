@@ -1,96 +1,198 @@
 # ClawShire CLI
 
-独立可安装的 ClawShire 命令行客户端。
+[![PyPI version](https://img.shields.io/pypi/v/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
+[![Python](https://img.shields.io/pypi/pyversions/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Hello World
+**clawshire-cli** 是 ClawShire 开源的命令行工具，支持人类用户和 AI Agent 在终端查询 A 股上市公司公告与年报数据。
+
+核心亮点：
+
+- 覆盖公告检索、年报定位、年报结构化数据、AI 智能分析等核心能力
+- 内置 4 个 Agent Skills，开箱即用，适配主流 AI 工具
+- 同时提供 Python SDK，安装 CLI 即可在代码中直接调用
+- `pip install clawshire-cli` 即可安装，支持 `clawshire` 和 `cs` 两个入口
+
+---
+
+## 能力概览
+
+| 能力域 | 说明 |
+| --- | --- |
+| 公告检索 | 按日期范围、证券代码、PDF 链接查询沪深北三市公告 |
+| 年报查询 | 按公司名称或代码定位年报列表，获取结构化数据 |
+| 年报 AI 分析 | 上传本地 PDF、PDF 链接或按公司发起智能分析任务 |
+| 用户与认证 | API Key 管理、用户信息、配额查询 |
+
+---
+
+## 安装
 
 要求：`Python >= 3.12`
 
-推荐先用 `uv` 创建一个独立环境，避免污染本地其他 Python 环境：
-
-```bash
-mkdir clawshire-demo && cd clawshire-demo
-uv venv .venv --python 3.12
-source .venv/bin/activate
-uv pip install clawshire-cli
-```
-
-然后：
-
-1. 访问 [https://clawshire.cn](https://clawshire.cn) 注册/登录
-2. 在控制台创建 API Key
-3. 执行下面几条命令
-
-```bash
-clawshire auth set-key <your_api_key>
-clawshire auth status
-clawshire user info
-clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
-```
-
-如果想马上试一个需要认证的能力：
-
-```bash
-clawshire annual-report latest --year 2025 --keyword 平安银行
-```
-
-## 安装与升级
-
-推荐使用 `Python 3.12` 或 `Python 3.13`。
-
-```bash
-pip install clawshire-cli
-```
-
-或使用 uv（推荐）：
+推荐使用 `uv`（隔离环境）：
 
 ```bash
 uv tool install clawshire-cli
 ```
 
-本地开发从源码安装：
+或使用 pip：
 
 ```bash
-uv tool install ./clawshire-cli
+pip install clawshire-cli
 ```
 
-安装后可使用两个命令入口：
+安装后提供两个等价入口：
 
 ```bash
 clawshire --help
 cs --help
 ```
 
-升级到最新版本：
+升级：
 
 ```bash
 clawshire update
-clawshire upgrade
 ```
 
-如果想先看将执行什么命令：
+---
+
+## 快速上手
 
 ```bash
-clawshire update --dry-run
-clawshire --output json update --dry-run
+# 1. 注册并获取 API Key：https://clawshire.cn
+# 2. 配置
+clawshire auth set-key <your_api_key>
+# 3. 验证
+clawshire user info
+# 4. 查公告
+clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
+# 5. 查年报
+clawshire annual-report latest --year 2025 --keyword 平安银行
+# 6. 发起年报 AI 分析
+clawshire annual-analysis company 000001 --year 2025
 ```
 
-如果想跳过确认提示：
+### 在 AI Agent 中使用
+
+Agent 使用前需确认已配置 API Key（环境变量或本地配置文件均可）：
 
 ```bash
-clawshire update -y
+export CLAWSHIRE_API_KEY="<your_api_key>"
+clawshire auth check   # 退出码 0 = 认证可用
 ```
 
-说明：
+推荐安装配套 Skills bundle，让 Agent 直接调用工作流：
 
-- `update` 会优先检查 PyPI 上的最新版本，再决定是否执行升级
-- `update` 适合通过 `uv tool`、`pipx`、`pip` 安装的场景
-- `upgrade` 是 `update` 的等价别名
-- 如果你当前是在源码目录里开发，优先继续使用你原来的开发安装方式
+```bash
+npx skills add <owner>/clawshire-cli -y -g
+```
 
-## SDK Quick Start
+---
 
-`clawshire-cli` 同时包含 Python SDK，安装 CLI 后即可直接在代码中使用：
+## 认证
+
+```bash
+clawshire auth set-key <key>   # 保存 API Key 到本地
+clawshire auth show            # 查看当前配置（key 掩码、base_url 等）
+clawshire auth status          # 查看 key 来源与认证状态
+clawshire auth check           # 检查认证可用性（退出码 0=ok）
+clawshire auth whoami          # 校验当前 key 是否有效
+clawshire auth clear-key       # 清除本地保存的 key
+clawshire auth logout          # clear-key 的别名
+```
+
+临时使用（不落盘）：
+
+```bash
+export CLAWSHIRE_API_KEY="<your_api_key>"
+# 或单次传参
+clawshire --api-key <your_api_key> user info
+```
+
+---
+
+## 命令
+
+### 命令分组与简写
+
+| 分组 | 简写 | 说明 |
+| --- | --- | --- |
+| `notice` | `gg` | 公告检索 |
+| `annual-report` | `ar` | 年报查询 |
+| `annual-analysis` | `aa` | 年报 AI 分析 |
+
+### 公告检索
+
+```bash
+# 按日期范围查询（keyword 可传证券代码或公司名）
+clawshire notice search --start-date 2026-04-01 --end-date 2026-04-20 --keyword 603402
+
+# 按证券代码查询
+clawshire notice stock 000001 --start-date 2026-04-01 --end-date 2026-04-20
+
+# 按公告 PDF 链接查询
+clawshire notice link --met-link https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
+```
+
+### 年报查询
+
+```bash
+# 查年报列表
+clawshire annual-report latest --year 2025 --keyword 平安银行
+
+# 查年报结构化数据
+clawshire annual-report data <met_uuid>
+```
+
+### 年报 AI 分析
+
+```bash
+# 按公司发起分析（推荐）
+clawshire annual-analysis company 000001 --year 2025
+
+# 通过本地 PDF 发起
+clawshire annual-analysis pdf-file ./report.pdf
+
+# 通过 PDF 链接发起
+clawshire annual-analysis pdf-url https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
+
+# 查询分析任务状态
+clawshire annual-analysis get <task_id_or_job_id>
+```
+
+> `pdf-file` / `pdf-url` 返回 `job_id`；`company` 返回 `task_id`，后续查询传对应 ID。
+
+### 用户信息
+
+```bash
+clawshire user info
+```
+
+### 升级
+
+```bash
+clawshire update           # 升级到最新版
+clawshire update --dry-run # 预览将执行的操作
+clawshire update -y        # 跳过确认
+```
+
+---
+
+## 输出格式
+
+全局参数 `--output` 必须放在子命令**前面**：
+
+```bash
+clawshire --output json notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
+clawshire --output json annual-report latest --year 2025 --keyword 平安银行
+```
+
+---
+
+## Python SDK
+
+安装 `clawshire-cli` 后 SDK 随包附带，无需单独安装：
 
 ```python
 from clawshire_sdk import ClawShireClient
@@ -100,455 +202,131 @@ client = ClawShireClient(
     api_key="your_api_key",
 )
 
-reports = client.annual.latest(
-    year=2025,
-    keyword="平安银行",
-    page_size=1,
-)
-
+# 查年报
+reports = client.annual.latest(year=2025, keyword="平安银行", page_size=1)
 print(reports["items"][0]["pdf_url"])
+
+# 发起分析
+task = client.annual.analyze_company("000001", year=2025)
+print(task["task_id"])
+
+# 查公告
+data = client.filings.search(
+    start_date="2026-04-01",
+    end_date="2026-04-20",
+    keyword="603402",
+)
+print(data["total"])
 ```
 
-完整 SDK 用法见：
+SDK 暴露两组域能力：
 
-```text
-docs/sdk-usage.md
-```
+- `client.filings` — 公告查询
+- `client.annual` — 年报查询与分析
 
-## Skills
+完整 SDK 文档见 [`docs/sdk-usage.md`](docs/sdk-usage.md)。
 
-`clawshire-cli` 仓库同时维护配套 Skills，目录位于：
+---
 
-```text
-skills/
-```
+## Agent Skills
 
-当前已提供：
+`clawshire-cli` 仓库同时维护配套 Agent Skills，位于 `skills/` 目录：
 
-1. `clawshire-shared`
-2. `clawshire-data-query`
-3. `clawshire-annual-report`
-4. `clawshire-annual-analysis`
+| Skill | 说明 |
+| --- | --- |
+| `clawshire-shared` | 共享规则：认证、输出格式、错误处理 |
+| `clawshire-data-query` | 公告数据查询工作流 |
+| `clawshire-annual-report` | 年报定位工作流 |
+| `clawshire-annual-analysis` | 年报 AI 分析工作流 |
 
-这些 Skills 的定位不是重复实现底层请求，而是复用 `clawshire` CLI，把公告查询、年报定位、年报分析等能力组织成更适合 Agent 调用的工作流。
-
-推荐按**整个仓库**安装 skills bundle，而不是单独安装某个 skill 子目录。
-
-示意安装方式：
+推荐按整个仓库安装 skills bundle：
 
 ```bash
 npx skills add <owner>/clawshire-cli -y -g
 ```
 
-这意味着：
+Skills 复用 `clawshire` CLI，将公告查询、年报定位、年报分析组织成适合 Agent 调用的工作流，而不是各自维护独立 HTTP 脚本。
 
-- `skills/` 下的多个 Skill 会一起分发
-- `clawshire-shared` 可以作为共享规则层存在
-- 不需要假设用户只安装单个 skill 子目录
-
-## Testing
-
-本地完整用户流程测试说明见：
-
-```text
-docs/local-e2e.md
-```
-
-Python SDK 使用说明见：
-
-```text
-docs/sdk-usage.md
-```
-
-一键检查脚本：
-
-```bash
-./scripts/e2e_local_check.sh
-```
-
-该脚本默认执行：
-
-1. 测试集
-2. CLI 基础命令检查
-3. skills 目录结构检查
-
-若环境中存在 `CLAWSHIRE_API_KEY`，还会继续执行真实线上链路验证，包括 `auth check`、`user info`、`notice stock`、`annual-report latest`、`annual-analysis company`。
-
-如果你只想快速确认安装成功，先跑：
-
-```bash
-clawshire --help
-clawshire auth --help
-clawshire update --dry-run
-clawshire user info --api-key <your_api_key>
-```
-
-## 3 分钟上手
-
-把下面几条命令直接复制执行即可：
-
-```bash
-pip install clawshire-cli
-clawshire auth set-key <your_api_key>
-clawshire user info
-clawshire annual-analysis pdf-url https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
-```
-
-如果你要查公告或年报，再继续：
-
-```bash
-clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20
-clawshire annual-report latest --year 2025 --keyword 平安银行
-```
-
-## 如何获取 API Key
-
-1. 访问 [https://clawshire.cn](https://clawshire.cn) 并注册/登录你的 ClawShire 账号
-2. 进入平台控制台中的 API Key 页面创建一个新 Key
-3. 复制创建后的 Key，并立即保存到安全位置
-4. 回到终端执行：
-
-```bash
-clawshire auth set-key <your_api_key>
-```
-
-如果你只想临时使用，也可以不落盘，直接通过环境变量传入：
-
-```bash
-export CLAWSHIRE_API_KEY="<your_api_key>"
-```
-
-## 先配置 API Key
-
-建议先把 API Key 保存到本地，这样后续不用每次手动加 `--api-key`。
-
-```bash
-clawshire auth set-key <your_api_key>
-clawshire auth show
-clawshire auth status
-clawshire auth check
-clawshire user info
-```
-
-如果想临时覆盖本地配置，也可以直接传：
-
-```bash
-clawshire --api-key <your_api_key> user info
-```
-
-清除本地保存的 Key：
-
-```bash
-clawshire auth clear-key
-clawshire auth logout
-```
-
-## 命令
-
-主命令分组：
-
-1. `notice`
-2. `annual-report`
-3. `annual-analysis`
-
-高频简写：
-
-1. `gg` -> `notice`
-2. `ar` -> `annual-report`
-3. `aa` -> `annual-analysis`
-
-## 全部命令能力
-
-| 能力 | 命令 | 是否需要 API Key | 说明 |
-|------|------|------------------|------|
-| 保存 Key | `clawshire auth set-key <key>` | 否 | 保存本地 API Key |
-| 查看认证配置 | `clawshire auth show` | 否 | 查看当前 base_url、key 掩码、输出格式、超时 |
-| 查看认证状态 | `clawshire auth status` | 否/建议有 | 查看当前 key 来源、是否已配置、是否认证可用 |
-| 检查认证可用性 | `clawshire auth check` | 是 | 用退出码检查当前认证是否可用，`0=ok` |
-| 清除 Key | `clawshire auth clear-key` | 否 | 清除本地保存的 API Key |
-| 退出登录 | `clawshire auth logout` | 否 | `clear-key` 的用户友好别名 |
-| 检查当前 Key | `clawshire auth whoami` | 是 | 校验当前 API Key 是否有效 |
-| 用户信息 | `clawshire user info` | 是 | 查询余额、免费次数、配额等用户信息 |
-| 公告按日期查询 | `clawshire notice search --start-date <d> --end-date <d> --keyword 603402` | 否/建议有 | 按日期范围查询公告，示例默认限定证券代码避免结果过大 |
-| 公告按证券代码查询 | `clawshire notice stock <sec_code> --start-date <d> --end-date <d>` | 否/建议有 | 查询某证券代码公告 |
-| 公告按链接查询 | `clawshire notice link --met-link <pdf_link>` | 否/建议有 | 按公告 PDF 链接查询 |
-| 年报列表 | `clawshire annual-report latest --year <YYYY> --keyword <kw>` | 是 | 查询指定年份年报列表 |
-| 年报结构化数据 | `clawshire annual-report data <met_uuid>` | 是 | 查询指定年报的结构化数据 |
-| 年报分析: 本地文件 | `clawshire annual-analysis pdf-file <path>` | 是 | 上传本地 PDF 分析 |
-| 年报分析: PDF 链接 | `clawshire annual-analysis pdf-url <url>` | 是 | 下载 PDF 链接后分析 |
-| 年报分析: 公司 | `clawshire annual-analysis company <代码或简称> --year <YYYY>` | 是 | 先查询指定年份年报，再自动发起分析 |
-| 查询分析任务 | `clawshire annual-analysis get <task_id_or_job_id>` | 是 | 查询分析任务状态或结果 |
-
-简写命令：
-
-| 简写 | 全称 | 示例 |
-|------|------|------|
-| `gg` | `notice` | `cs gg search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402` |
-| `ar` | `annual-report` | `cs ar latest --year 2025 --keyword 平安银行` |
-| `aa` | `annual-analysis` | `cs aa company 000001 --year 2025` |
-
-按命令分组查看帮助：
-
-```bash
-clawshire auth --help
-clawshire update --help
-clawshire user --help
-clawshire notice --help
-clawshire annual-report --help
-clawshire annual-analysis --help
-```
-
-## 示例
-
-```bash
-clawshire user info
-clawshire notice search --start-date 2026-04-01 --end-date 2026-04-20 --keyword 603402
-clawshire annual-report latest --year 2025 --keyword 平安银行
-clawshire annual-analysis pdf-file ./report.pdf
-clawshire annual-analysis pdf-url https://example.com/report.pdf
-clawshire annual-analysis company 000001 --year 2025
-```
-
-年报分析测试 PDF 示例：
-
-```text
-https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
-```
-
-推荐直接试：
-
-```bash
-clawshire annual-analysis pdf-url https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
-```
+---
 
 ## 配置
 
 支持环境变量：
 
-1. `CLAWSHIRE_API_KEY`
-2. `CLAWSHIRE_BASE_URL`
-3. `CLAWSHIRE_OUTPUT`
-4. `CLAWSHIRE_TIMEOUT`
+| 变量 | 说明 |
+| --- | --- |
+| `CLAWSHIRE_API_KEY` | API Key |
+| `CLAWSHIRE_BASE_URL` | API 地址（默认 `https://api.clawshire.cn`） |
+| `CLAWSHIRE_OUTPUT` | 输出格式（`text` / `json`） |
+| `CLAWSHIRE_TIMEOUT` | HTTP 超时（秒） |
 
-如果你更习惯环境变量，可直接这样配置：
+---
 
-```bash
-export CLAWSHIRE_API_KEY=<your_api_key>
-clawshire user info
-```
+## 常见问题
 
-## 最常用命令
-
-查询用户信息：
-
-```bash
-clawshire user info
-```
-
-查询公告：
-
-```bash
-clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
-clawshire notice stock 000001 --start-date 2026-04-01 --end-date 2026-04-20
-clawshire notice link --met-link <pdf_link>
-```
-
-查询年报：
-
-```bash
-clawshire annual-report latest --year 2025 --keyword 平安银行
-clawshire annual-report data <met_uuid>
-```
-
-发起年报分析：
-
-```bash
-clawshire annual-analysis pdf-file ./report.pdf
-clawshire annual-analysis pdf-url https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
-clawshire annual-analysis company 000001 --year 2025
-```
-
-查询分析任务：
-
-```bash
-clawshire annual-analysis get <task_id_or_job_id>
-```
-
-## 必要提示
-
-1. 全局参数要放在子命令前面，例如：`clawshire --output json user info`
-2. `notice` 查询通常不需要 API Key，但如果本地配置了错误的 Key，可能会带上错误认证头
-3. `annual-report`、`annual-analysis`、`user info` 都需要有效 API Key
-4. CLI 不单独实现计费，仍然走服务端原有配额和计费逻辑
-
-## 常见报错与处理
-
-### 1. `认证失败: Authorization 格式错误，应为 Bearer <api_key>`
-
-原因：
-
-1. 本地保存了错误的 API Key
-2. 环境变量里有错误的 `CLAWSHIRE_API_KEY`
-3. 你传入的不是完整 API Key
-
-处理：
+### `认证失败: Authorization 格式错误`
 
 ```bash
 clawshire auth show
-clawshire auth status
 clawshire auth clear-key
 clawshire auth set-key <your_api_key>
-clawshire user info
 ```
 
-如果你使用环境变量，也检查：
-
-```bash
-echo $CLAWSHIRE_API_KEY
-```
-
-### 2. `配置错误: 该命令需要 API Key`
-
-原因：
-
-1. 你在调用需要认证的命令，但还没有配置 Key
-
-处理：
+### `该命令需要 API Key`
 
 ```bash
 clawshire auth set-key <your_api_key>
-clawshire auth status
-clawshire user info
-```
-
-或者临时传参：
-
-```bash
+# 或临时传参
 clawshire --api-key <your_api_key> user info
 ```
 
-### 3. `unrecognized arguments: --output json`
+### `unrecognized arguments: --output json`
 
-原因：
-
-1. 把全局参数写在了子命令后面
-
-错误示例：
+全局参数要放在子命令前面：
 
 ```bash
-clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402 --output json
+# 正确
+clawshire --output json notice search --start-date 2026-04-19 --end-date 2026-04-20
 ```
 
-正确写法：
+### `未找到与 XXX 匹配的年报`
 
 ```bash
-clawshire --output json notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
-```
-
-### 4. `未找到与 XXX 匹配的年报`
-
-原因：
-
-1. 公司代码或简称不匹配
-2. 指定年份没有收录对应年报
-3. 交易所筛选过窄
-
-处理：
-
-```bash
-clawshire annual-report latest --year 2025 --keyword 平安银行
 clawshire annual-report latest --year 2025 --keyword 000001
-clawshire annual-analysis company 000001 --year 2025
 ```
 
-如果仍然找不到，先去掉 `--exchange` 再试。
+如果仍找不到，去掉 `--exchange` 参数再试。
 
-### 5. `查询分析任务` 没返回结果
+---
 
-原因：
-
-1. `annual-analysis get` 传错了 ID
-2. `pdf-file/pdf-url` 用的是 `job_id`
-3. `company` 用的是平台异步分析 `task_id`
-
-处理：
-
-1. `pdf-file` / `pdf-url` 后续查询传 `job_id`
-2. `company` 后续查询优先传 `task_id`
-
-示例：
+## 发布
 
 ```bash
-clawshire annual-analysis get 123
-clawshire annual-analysis get job_xxx
-```
-
-## 发布流程
-
-### 版本更新
-
-1. 修改 [pyproject.toml](/Users/memect/work/code/sz_extract/hermeshub/clawshire-cli/pyproject.toml) 中的 `version`
-2. 如有命令变化，同步更新本 README 与根目录 [README.md](/Users/memect/work/code/sz_extract/hermeshub/README.md)
-
-### 本地构建
-
-```bash
-cd clawshire-cli
-uv build
-```
-
-构建产物位于：
-
-```text
-clawshire-cli/dist/
-```
-
-### 本地安装验证
-
-```bash
-cd clawshire-cli
-uv tool install .
-clawshire --help
-cs --help
-clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
-```
-
-如果本机已安装 `pipx`，再补一轮：
-
-```bash
-cd clawshire-cli
-pipx install .
-clawshire --help
-```
-
-### 发布测试版
-
-建议先发测试版，再发正式版，例如：
-
-1. `0.1.0a1`
-2. `0.1.0b1`
-3. `0.1.0rc1`
-
-发布命令示例：
-
-```bash
+# 修改 pyproject.toml 中的 version，然后：
 cd clawshire-cli
 uv build
 uv publish
-```
 
-如果要发到 TestPyPI：
-
-```bash
-cd clawshire-cli
-uv build
+# 发布到 TestPyPI
 uv publish --publish-url https://test.pypi.org/legacy/
 ```
 
-安装验证：
+本地验证：
 
 ```bash
-pip install clawshire-cli
+uv tool install .
 clawshire --help
-cs --help
+clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
 ```
+
+---
+
+## 测试
+
+```bash
+./scripts/e2e_local_check.sh
+```
+
+脚本执行：测试集 → CLI 基础命令检查 → skills 目录结构检查。若环境中存在 `CLAWSHIRE_API_KEY`，还会执行真实线上链路验证。
+
+完整测试说明见 [`docs/local-e2e.md`](docs/local-e2e.md)。
