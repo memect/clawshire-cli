@@ -23,12 +23,8 @@ where = ["."]
 include = ["clawshire_cli*", "clawshire_sdk*"]
 
 [[tool.uv.index]]
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+url = "https://pypi.org/simple"
 default = true
-
-[[tool.uv.index]]
-name = "memect"
-url = "http://192.168.41.95:8141/memect/dev/+simple/"
 
 [dependency-groups]
 dev = [

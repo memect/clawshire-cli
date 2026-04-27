@@ -1,8 +1,10 @@
 # ClawShire CLI
 
 [![PyPI version](https://img.shields.io/pypi/v/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
 [![Python](https://img.shields.io/pypi/pyversions/clawshire-cli)](https://pypi.org/project/clawshire-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/memect/clawshire-cli)](https://github.com/memect/clawshire-cli/issues)
 
 **clawshire-cli** 是 ClawShire 开源的命令行工具，支持人类用户和 AI Agent 在终端查询 A 股上市公司公告与年报数据。
 
