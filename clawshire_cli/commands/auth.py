@@ -39,22 +39,22 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
 def _handle_interactive(args: Namespace) -> int:
     config = load_config()
     if config.api_key:
-        print(f"当前 API Key: {mask_api_key(config.api_key)}")
-        print("已配置，可直接使用。如需更换，请输入新 Key（直接回车跳过）：")
-        key = input("Enter API Key: ").strip()
+        print(f"Current API Key: {mask_api_key(config.api_key)}")
+        print("Already configured. Enter a new key to replace it, or press Enter to skip.")
+        key = input("API Key: ").strip()
         if not key:
             return 0
     else:
-        print("欢迎使用 ClawShire CLI！")
-        print("请访问 https://clawshire.cn 注册并获取 API Key。")
-        key = input("Enter API Key: ").strip()
+        print("Welcome to ClawShire CLI!")
+        print("Get your API Key at https://clawshire.cn")
+        key = input("API Key: ").strip()
         if not key:
-            print("未输入 API Key，已跳过。")
+            print("No API Key entered. Skipped.")
             return 1
     config.api_key = key
     path = save_config(config)
-    print(f"API Key 已保存到 {path}")
-    print(f"当前 Key: {mask_api_key(key)}")
+    print(f"API Key saved to {path}")
+    print(f"Key: {mask_api_key(key)}")
     return 0
 
 
