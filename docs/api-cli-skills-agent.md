@@ -105,7 +105,7 @@ flowchart TB
 一次命令执行天然包含三件事：输入参数、标准输出、退出码。
 
 ```bash
-clawshire --output json annual-report latest --year 2025 --keyword 平安银行 --page-size 3
+clawshire annual-report latest --year 2025 --keyword 平安银行 --page-size 3 --format json
 ```
 
 Agent 拿到结果后可以明确判断：
@@ -139,10 +139,10 @@ clawshire annual-analysis --help
 更重要的是，CLI 可以直接约束输出：
 
 ```bash
-clawshire --output json notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --page-size 5
+clawshire notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --page-size 5 --format json
 ```
 
-对 Agent 来说，`--output json` 是一个很重要的稳定接口。它避免了从人类友好的表格或自然语言里反向解析字段。
+对 Agent 来说，`--format json` 是一个很重要的稳定接口。它避免了从人类友好的表格或自然语言里反向解析字段。
 
 ### 3. CLI 同时连接本地和远端
 
@@ -198,7 +198,7 @@ flowchart TD
     Input -->|日期 / 关键词 / 类型| Search["notice search<br/>通用搜索"]
     Input -->|公告 PDF 链接| Link["notice link<br/>按原文链接回查"]
     Input -->|其实要年报或财报分析| Switch["切到 annual-report 或 annual-analysis"]
-    Stock --> JSON["优先 --output json"]
+    Stock --> JSON["优先 --format json"]
     Search --> JSON
     Link --> JSON
 ```
@@ -228,12 +228,12 @@ sequenceDiagram
     U->>A: 分析一下平安银行 2025 年报
     A->>S: 读取 clawshire-annual-analysis
     S->>A: 用户给公司名，优先 company 模式
-    A->>C: clawshire --output json annual-analysis company 000001 --year 2025
+    A->>C: clawshire annual-analysis company 000001 --year 2025 --format json
     C->>P: 提交分析任务
     P-->>C: task_id / job_id / next_command
     C-->>A: JSON 输出
     A->>U: 说明任务状态和下一步查询命令
-    A->>C: clawshire --output json annual-analysis get <id>
+    A->>C: clawshire annual-analysis get <id> --format json
     C->>P: 查询任务结果
     P-->>C: status / report_url / conclusion
     C-->>A: JSON 输出
@@ -266,8 +266,8 @@ flowchart TB
 对应命令非常短：
 
 ```bash
-clawshire --output json annual-analysis company 000001 --year 2025
-clawshire --output json annual-analysis get <task_id_or_job_id>
+clawshire annual-analysis company 000001 --year 2025 --format json
+clawshire annual-analysis get <task_id_or_job_id> --format json
 ```
 
 这背后并不是 Agent 变聪明了，而是工具链把不稳定性逐层消化掉了：
@@ -338,8 +338,8 @@ flowchart LR
 
 ### CLI 层
 
-- 所有核心命令都支持 `--output json`。
-- 全局参数固定放在子命令前，例如 `clawshire --output json user info`。
+- 所有核心命令都支持 `--format json`。
+- 展示格式参数放在具体命令后，例如 `clawshire user info --format json`。
 - 异步任务返回 `task_id`、`job_id`、`status` 和 `next_command`。
 - 高风险或消耗额度的操作默认让 Skill 判断意图，不让 Agent 误触发。
 - 错误信息尽量结构化，至少保证 stderr 能指导下一步。

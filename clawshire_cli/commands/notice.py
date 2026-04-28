@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
-from clawshire_cli.context import build_client, resolve_output
+from clawshire_cli.context import add_format_args, build_client, resolve_format
 from clawshire_cli.output import render
 
 
@@ -21,6 +21,7 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
 
     link = notice_subparsers.add_parser("link", help="按公告原文链接查询")
     link.add_argument("--met-link", required=True, help="公告原文链接")
+    add_format_args(link)
     link.set_defaults(handler=_handle_link)
 
 
@@ -32,6 +33,7 @@ def _add_search_args(parser: ArgumentParser) -> None:
     parser.add_argument("--page", type=int, default=1, help="页码")
     parser.add_argument("--page-size", type=int, default=20, help="每页数量")
     parser.add_argument("--page-all", action="store_true", help="自动翻页获取全部结果")
+    add_format_args(parser)
 
 
 def _fetch_all(fetch_fn, **kwargs) -> dict:
@@ -54,7 +56,7 @@ def _handle_search(args: Namespace) -> int:
         data = _fetch_all(client.filings.search, **kw)
     else:
         data = client.filings.search(**kw, page=args.page, page_size=args.page_size)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 
@@ -66,12 +68,12 @@ def _handle_stock(args: Namespace) -> int:
         data = _fetch_all(lambda **k: client.filings.stock(args.sec_code, **k), **kw)
     else:
         data = client.filings.stock(args.sec_code, **kw, page=args.page, page_size=args.page_size)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 
 def _handle_link(args: Namespace) -> int:
     client = build_client(args)
     data = client.filings.link(args.met_link)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0

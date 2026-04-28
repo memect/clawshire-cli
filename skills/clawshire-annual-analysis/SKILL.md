@@ -51,19 +51,19 @@ metadata:
 ### 最推荐：按公司提交分析
 
 ```bash
-clawshire --output json annual-analysis company 000001 --year 2025
+clawshire annual-analysis company 000001 --year 2025 --format json
 ```
 
 ### 用本地 PDF 提交
 
 ```bash
-clawshire --output json annual-analysis pdf-file ./report.pdf
+clawshire annual-analysis pdf-file ./report.pdf --format json
 ```
 
 ### 查询任务状态
 
 ```bash
-clawshire --output json annual-analysis get 74
+clawshire annual-analysis get 74 --format json
 ```
 
 ### 下载已完成报告
@@ -75,7 +75,7 @@ clawshire annual-analysis get 74 --save-report-to report.html
 ## Output Rules
 
 - 面向用户：至少说明当前分析对象、任务 ID、状态、下一步命令。
-- 面向脚本：优先 `--output json`。
+- 面向脚本：优先 `--format json`。
 - 如果提交结果里带 `next_command`，优先直接提示执行它。
 
 ## References

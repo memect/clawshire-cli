@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@File    :   main.py
+@Time    :   2026/04/28 00:15
+@Desc    :   ClawShire CLI 主入口和命令分发
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -7,7 +15,7 @@ from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
-from clawshire_cli.commands import annual_analysis, annual_report, auth, notice, update, user
+from clawshire_cli.commands import agent, annual_analysis, annual_report, auth, notice, update, user
 from clawshire_sdk import (
     ClawShireApiError,
     ClawShireAuthError,
@@ -20,19 +28,20 @@ CLI_API_URL = "https://api.clawshire.cn"
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """构建 CLI 顶层解析器并注册全部命令组。"""
     parser = argparse.ArgumentParser(
         prog="clawshire",
         description="ClawShire CLI",
     )
     parser.add_argument("--base-url", help="API 基础地址，如 https://api.clawshire.cn")
     parser.add_argument("--api-key", help="API Key，优先级高于本地配置")
-    parser.add_argument("--output", choices=["table", "json", "markdown", "csv"], help="输出格式")
     parser.add_argument("--timeout", type=float, help="HTTP 超时秒数")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
     notice.register(subparsers)
     annual_report.register(subparsers)
     annual_analysis.register(subparsers)
+    agent.register(subparsers)
     auth.register(subparsers)
     update.register(subparsers)
     user.register(subparsers)
@@ -42,6 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _find_pyproject_path() -> Path | None:
+    """从当前模块路径向上查找 pyproject.toml。"""
     current = Path(__file__).resolve().parent
     for candidate_dir in (current, *current.parents):
         candidate = candidate_dir / "pyproject.toml"
@@ -51,6 +61,7 @@ def _find_pyproject_path() -> Path | None:
 
 
 def _read_version_from_pyproject() -> str | None:
+    """从 pyproject.toml 读取项目版本号。"""
     pyproject_path = _find_pyproject_path()
     if pyproject_path is None:
         return None
@@ -62,6 +73,7 @@ def _read_version_from_pyproject() -> str | None:
 
 @lru_cache(maxsize=1)
 def get_cli_version() -> str:
+    """获取 CLI 版本，开发环境优先读 pyproject，安装环境读包元数据。"""
     pyproject_version = _read_version_from_pyproject()
     if pyproject_version:
         return pyproject_version
@@ -72,6 +84,7 @@ def get_cli_version() -> str:
 
 
 def render_welcome() -> None:
+    """无参数运行时输出欢迎信息和常用命令。"""
     print("ClawShire CLI")
     print(f"version: {get_cli_version()}")
     print(f"website: {CLI_WEBSITE_URL}")
@@ -96,11 +109,13 @@ def render_welcome() -> None:
 
 
 def handle_version(_: argparse.Namespace) -> int:
+    """处理 version 命令。"""
     print(get_cli_version())
     return 0
 
 
 def run(argv: list[str] | None = None) -> int:
+    """执行 CLI 参数解析、命令分发和统一异常处理。"""
     argv = sys.argv[1:] if argv is None else argv
     argv = list(argv)
     if not argv:
@@ -133,6 +148,7 @@ def run(argv: list[str] | None = None) -> int:
 
 
 def main() -> None:
+    """控制台脚本入口。"""
     raise SystemExit(run())
 
 

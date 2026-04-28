@@ -7,11 +7,19 @@
 [![GitHub issues](https://img.shields.io/github/issues/memect/clawshire-cli)](https://github.com/memect/clawshire-cli/issues)
 [![GitHub stars](https://img.shields.io/github/stars/memect/clawshire-cli)](https://github.com/memect/clawshire-cli)
 
-**clawshire-cli** 是 ClawShire 开源的命令行工具，支持人类用户和 AI Agent 在终端查询 A 股上市公司公告与年报数据。
+**clawshire-cli** 是 ClawShire 开源的命令行工具，支持用户、开发者和 AI Agent 在终端查询 A 股上市公司的临时公告、年报数据，并发起年报智能分析。
+
+ClawShire 面向上市公司信息披露数据的程序化使用场景。A 股上市公司会持续发布临时公告、定期报告等公开文件，但原始公告通常分散在交易所、巨潮资讯等渠道，人工检索、下载、比对和结构化处理成本较高。`clawshire-cli` 将这些能力封装为稳定的命令行入口，适合投研、风控、财务分析、舆情监控、数据工程和 AI Agent 工作流使用。
+
+当前重点支持：
+
+- A 股上市公司临时公告查询：按日期范围、证券代码、公司名称或公告 PDF 链接检索公告数据
+- 年报数据查询：按公司名称、证券代码、年份定位年报，并获取结构化年报数据
+- 年报数据分析：基于本地 PDF、PDF 链接或公司年报自动发起 AI 分析任务
 
 核心亮点：
 
-- 覆盖公告检索、年报定位、年报结构化数据、AI 智能分析等核心能力
+- 覆盖临时公告检索、年报定位、年报结构化数据、AI 智能分析等核心能力
 - 内置 4 个 Agent Skills，开箱即用，适配主流 AI 工具
 - 同时提供 Python SDK，安装 CLI 即可在代码中直接调用
 - `pip install clawshire-cli` 即可安装，支持 `clawshire` 和 `cs` 两个入口
@@ -22,7 +30,7 @@
 
 | 能力域 | 说明 |
 | --- | --- |
-| 公告检索 | 按日期范围、证券代码、PDF 链接查询沪深北三市公告 |
+| 临时公告查询 | 按日期范围、证券代码、公司名称、PDF 链接查询沪深北三市公告 |
 | 年报查询 | 按公司名称或代码定位年报列表，获取结构化数据 |
 | 年报 AI 分析 | 上传本地 PDF、PDF 链接或按公司发起智能分析任务 |
 | 用户与认证 | API Key 管理、用户信息、配额查询 |
@@ -82,6 +90,10 @@ Agent 使用前需确认已配置 API Key（环境变量或本地配置文件均
 
 ```bash
 export CLAWSHIRE_API_KEY="<your_api_key>"
+export CLAWSHIRE_CLIENT=skill
+export CLAWSHIRE_AGENT_NAME="<agent-name>"
+export CLAWSHIRE_RATIONALE="<why-this-tool-is-called>"
+export CLAWSHIRE_TRACE_ID="<trace-id>"
 clawshire auth check   # 退出码 0 = 认证可用
 ```
 
@@ -124,6 +136,7 @@ clawshire --api-key <your_api_key> user info
 | `notice` | `gg` | 公告检索 |
 | `annual-report` | `ar` | 年报查询 |
 | `annual-analysis` | `aa` | 年报 AI 分析 |
+| `agent` | - | Agent 观测与反馈 |
 
 ### 公告检索
 
@@ -172,6 +185,27 @@ clawshire annual-analysis get <task_id_or_job_id>
 clawshire user info
 ```
 
+### Agent 反馈
+
+Agent 或脚本在工具能力不匹配、参数语义不清、结果无法继续使用时，可以提交结构化反馈：
+
+```bash
+clawshire agent feedback \
+  --intent "分析某公司近期公告风险" \
+  --attempted '["notice search", "annual-report latest"]' \
+  --blocked-by "公告结果缺少风险事件归类" \
+  --expected-capability "提供公告风险事件时间线" \
+  --related-tool notice.search \
+  --severity high \
+  --format json
+```
+
+也可以从 JSON 文件提交：
+
+```bash
+clawshire agent feedback --from-json ./feedback.json --format json
+```
+
 ### 升级
 
 ```bash
@@ -184,11 +218,17 @@ clawshire update -y        # 跳过确认
 
 ## 输出格式
 
-全局参数 `--output` 必须放在子命令**前面**：
+`--format` 是具体命令的展示参数，放在业务参数后面：
 
 ```bash
-clawshire --output json notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402
-clawshire --output json annual-report latest --year 2025 --keyword 平安银行
+clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --keyword 603402 --format json
+clawshire annual-report latest --year 2025 --keyword 平安银行 --format json
+```
+
+支持的格式：`table`、`json`、`markdown`、`csv`。也可以使用 `--json` 作为 `--format json` 的快捷写法：
+
+```bash
+clawshire user info --json
 ```
 
 ---
@@ -260,7 +300,7 @@ Skills 复用 `clawshire` CLI，将公告查询、年报定位、年报分析组
 | --- | --- |
 | `CLAWSHIRE_API_KEY` | API Key |
 | `CLAWSHIRE_BASE_URL` | API 地址（默认 `https://api.clawshire.cn`） |
-| `CLAWSHIRE_OUTPUT` | 输出格式（`text` / `json`） |
+| `CLAWSHIRE_FORMAT` | 输出格式（`table` / `json` / `markdown` / `csv`） |
 | `CLAWSHIRE_TIMEOUT` | HTTP 超时（秒） |
 
 ---
@@ -285,11 +325,11 @@ clawshire --api-key <your_api_key> user info
 
 ### `unrecognized arguments: --output json`
 
-全局参数要放在子命令前面：
+`--output` 已改为 `--format`，并放在具体命令后面：
 
 ```bash
 # 正确
-clawshire --output json notice search --start-date 2026-04-19 --end-date 2026-04-20
+clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --format json
 ```
 
 ### `未找到与 XXX 匹配的年报`

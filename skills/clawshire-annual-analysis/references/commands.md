@@ -8,7 +8,7 @@
 | `clawshire annual-analysis pdf-url <url>` | 用 PDF 链接提交分析 |
 | `clawshire annual-analysis company <kw> --year <YYYY>` | 自动定位年报并发起分析 |
 | `clawshire annual-analysis get <id>` | 查询任务状态 |
-| `clawshire --output json ...` | 返回结构化结果供脚本或 Agent 处理 |
+| `clawshire annual-analysis ... --format json` | 返回结构化结果供脚本或 Agent 处理 |
 
 ## 按公司发起分析
 
@@ -21,8 +21,8 @@ clawshire annual-analysis company <证券代码或简称> --year <YYYY>
 示例：
 
 ```bash
-clawshire --output json annual-analysis company 000001 --year 2025
-clawshire --output json annual-analysis company 920445 --year 2025 --exchange bj
+clawshire annual-analysis company 000001 --year 2025 --format json
+clawshire annual-analysis company 920445 --year 2025 --exchange bj --format json
 ```
 
 ## 用本地 PDF 提交分析
@@ -34,8 +34,8 @@ clawshire annual-analysis pdf-file <本地路径>
 示例：
 
 ```bash
-clawshire --output json annual-analysis pdf-file ./report.pdf
-clawshire --output json annual-analysis pdf-file ./report.pdf --wait
+clawshire annual-analysis pdf-file ./report.pdf --format json
+clawshire annual-analysis pdf-file ./report.pdf --wait --format json
 ```
 
 ## 用 PDF 链接提交分析
@@ -47,7 +47,7 @@ clawshire annual-analysis pdf-url <url>
 示例：
 
 ```bash
-clawshire --output json annual-analysis pdf-url https://example.com/report.pdf
+clawshire annual-analysis pdf-url https://example.com/report.pdf --format json
 ```
 
 注意：
@@ -65,7 +65,7 @@ clawshire annual-analysis get <task_or_job_id>
 示例：
 
 ```bash
-clawshire --output json annual-analysis get 74
-clawshire --output json annual-analysis get 27
+clawshire annual-analysis get 74 --format json
+clawshire annual-analysis get 27 --format json
 clawshire annual-analysis get 74 --save-report-to report.html
 ```

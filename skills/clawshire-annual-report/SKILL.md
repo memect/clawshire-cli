@@ -23,7 +23,7 @@ metadata:
 2. 用户想“先找到年报”时，优先 `annual-report latest`。
 3. 用户已经有 `met_uuid` 时，直接 `annual-report data`，不要重复检索列表。
 4. 如果用户最终目标是做分析，先用本技能找到目标年报，再切到 `clawshire-annual-analysis`。
-5. 返回给 Agent 时，优先 `--output json`，保留 `met_uuid`、`company_code`、`pdf_url`。
+5. 返回给 Agent 时，优先 `--format json`，保留 `met_uuid`、`company_code`、`pdf_url`。
 
 ## Quick Reference
 
@@ -32,7 +32,7 @@ metadata:
 | 查某公司某年年报 | `clawshire annual-report latest --year <YYYY> --keyword <kw>` |
 | 按交易所过滤 | `clawshire annual-report latest --year <YYYY> --exchange <ex> --keyword <kw>` |
 | 查结构化数据 | `clawshire annual-report data <met_uuid>` |
-| 返回结构化 JSON | `clawshire --output json annual-report ...` |
+| 返回结构化 JSON | `clawshire annual-report ... --format json` |
 
 ## Decision Tree
 
@@ -54,13 +54,13 @@ clawshire annual-report latest --year 2025 --keyword 平安银行 --page-size 3
 ### 返回 JSON 供脚本继续处理
 
 ```bash
-clawshire --output json annual-report latest --year 2025 --keyword 000001
+clawshire annual-report latest --year 2025 --keyword 000001 --format json
 ```
 
 ### 用 met_uuid 查询结构化年报
 
 ```bash
-clawshire --output json annual-report data 10fd860b-c12e-54b3-a5b3-38c2ecdf5b2b
+clawshire annual-report data 10fd860b-c12e-54b3-a5b3-38c2ecdf5b2b --format json
 ```
 
 ## Output Rules

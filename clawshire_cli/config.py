@@ -15,7 +15,7 @@ CONFIG_PATH = Path.home() / ".config" / "clawshire" / "config.toml"
 class CliConfig:
     base_url: str = DEFAULT_BASE_URL
     api_key: str | None = None
-    output: str = "table"
+    format: str = "table"
     timeout: float = 30.0
 
 
@@ -25,7 +25,7 @@ def load_config() -> CliConfig:
     # 环境变量作为默认值
     config.base_url = os.getenv("CLAWSHIRE_BASE_URL", config.base_url)
     config.api_key = os.getenv("CLAWSHIRE_API_KEY", config.api_key)
-    config.output = os.getenv("CLAWSHIRE_OUTPUT", config.output)
+    config.format = os.getenv("CLAWSHIRE_FORMAT", config.format)
     env_timeout = os.getenv("CLAWSHIRE_TIMEOUT")
     if env_timeout:
         config.timeout = float(env_timeout)
@@ -37,8 +37,8 @@ def load_config() -> CliConfig:
             config.base_url = str(data["base_url"])
         if "api_key" in data:
             config.api_key = data["api_key"]
-        if "output" in data:
-            config.output = str(data["output"])
+        if "format" in data:
+            config.format = str(data["format"])
         if "timeout" in data:
             config.timeout = float(data["timeout"])
 
@@ -49,7 +49,7 @@ def save_config(config: CliConfig) -> Path:
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     data: dict = {
         "base_url": config.base_url,
-        "output": config.output,
+        "format": config.format,
         "timeout": config.timeout,
     }
     if config.api_key is not None:

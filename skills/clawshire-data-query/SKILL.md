@@ -24,7 +24,7 @@ metadata:
 3. 用户给了公告 PDF 直链时，直接用 `notice link`，不要先走日期搜索。
 4. 默认控制结果规模；若用户没有明确要全量数据，不要主动加 `--page-all`。
 5. 如果下一步目标其实是查年报或做年报分析，切到对应年报技能，不要继续在公告技能里兜圈子。
-6. 给脚本或 Agent 返回结果时，优先 `clawshire --output json ...`。
+6. 给脚本或 Agent 返回结果时，优先在具体命令后加 `--format json`。
 
 ## Quick Reference
 
@@ -33,7 +33,7 @@ metadata:
 | 按日期范围查公告 | `clawshire notice search --start-date <d> --end-date <d>` |
 | 按证券代码查公告 | `clawshire notice stock <sec_code> --start-date <d> --end-date <d>` |
 | 按 PDF 链接回查 | `clawshire notice link --met-link <url>` |
-| 返回结构化 JSON | `clawshire --output json notice ...` |
+| 返回结构化 JSON | `clawshire notice ... --format json` |
 
 ## Decision Tree
 
@@ -56,19 +56,19 @@ clawshire notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --pa
 ### 查某段时间内带关键词的公告
 
 ```bash
-clawshire --output json notice search --start-date 2026-04-01 --end-date 2026-04-20 --keyword 603402
+clawshire notice search --start-date 2026-04-01 --end-date 2026-04-20 --keyword 603402 --format json
 ```
 
 ### 用公告原文链接回查
 
 ```bash
-clawshire --output json notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF
+clawshire notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF --format json
 ```
 
 ## Output Rules
 
 - 面向用户：至少总结公司名、标题、公告日期、原文链接。
-- 面向脚本：优先 `--output json`。
+- 面向脚本：优先 `--format json`。
 - 查询范围较大时，优先先缩小日期范围或证券代码，再考虑 `--page-all`。
 
 ## References

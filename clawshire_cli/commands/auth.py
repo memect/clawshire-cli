@@ -3,7 +3,7 @@ from __future__ import annotations
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
 from clawshire_cli.config import CONFIG_PATH, load_config, mask_api_key, save_config
-from clawshire_cli.context import build_client, resolve_output
+from clawshire_cli.context import add_format_args, build_client, resolve_format
 from clawshire_cli.output import render
 from clawshire_sdk import ClawShireApiError, ClawShireAuthError, ClawShireNetworkError
 
@@ -24,15 +24,18 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     logout.set_defaults(handler=_handle_clear_key)
 
     show = auth_subparsers.add_parser("show", help="查看当前认证配置")
+    add_format_args(show)
     show.set_defaults(handler=_handle_show)
 
     status = auth_subparsers.add_parser("status", help="查看当前认证状态")
+    add_format_args(status)
     status.set_defaults(handler=_handle_status)
 
     check = auth_subparsers.add_parser("check", help="检查当前认证是否可用")
     check.set_defaults(handler=_handle_check)
 
     whoami = auth_subparsers.add_parser("whoami", help="检查当前 API Key")
+    add_format_args(whoami)
     whoami.set_defaults(handler=_handle_whoami)
 
 
@@ -81,10 +84,10 @@ def _handle_show(args: Namespace) -> int:
         {
             "base_url": config.base_url,
             "api_key": mask_api_key(config.api_key),
-            "output": config.output,
+            "format": config.format,
             "timeout": config.timeout,
         },
-        output=resolve_output(args),
+        output=resolve_format(args),
     )
     return 0
 
@@ -102,7 +105,7 @@ def _handle_status(args: Namespace) -> int:
         "message": "未配置 API Key",
     }
     if not config.api_key:
-        render(payload, output=resolve_output(args))
+        render(payload, output=resolve_format(args))
         return 1
 
     client = build_client(args)
@@ -113,7 +116,7 @@ def _handle_status(args: Namespace) -> int:
     except (ClawShireAuthError, ClawShireApiError, ClawShireNetworkError) as exc:
         payload["message"] = str(exc)
 
-    render(payload, output=resolve_output(args))
+    render(payload, output=resolve_format(args))
     return 0 if payload["authenticated"] else 1
 
 
@@ -130,7 +133,7 @@ def _handle_check(args: Namespace) -> int:
 def _handle_whoami(args: Namespace) -> int:
     client = build_client(args)
     data = client.get("/api/v1/api-key/info", auth_required=True)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 

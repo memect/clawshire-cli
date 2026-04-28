@@ -105,7 +105,7 @@ clawshire auth status
 
 ```bash
 clawshire notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --page-size 3
-clawshire --output json notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF
+clawshire notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF --format json
 ```
 
 ### 年报定位
@@ -117,13 +117,13 @@ clawshire annual-report latest --year 2025 --keyword 平安银行 --page-size 3
 ### 年报分析
 
 ```bash
-clawshire --output json annual-analysis company 000001 --year 2025
+clawshire annual-analysis company 000001 --year 2025 --format json
 ```
 
 如果返回 `task_id` 或 `next_command`，继续查状态：
 
 ```bash
-clawshire --output json annual-analysis get <task_id>
+clawshire annual-analysis get <task_id> --format json
 ```
 
 ## 6. Skills bundle 验证
@@ -168,7 +168,7 @@ npx skills add <owner>/clawshire-cli -y -g
 ### 认证状态
 
 ```bash
-clawshire --output json auth status
+clawshire auth status --format json
 ```
 
 关键结果：
@@ -184,7 +184,7 @@ clawshire --output json auth status
 ### 用户信息
 
 ```bash
-clawshire --output json user info
+clawshire user info --format json
 ```
 
 关键结果：
@@ -199,7 +199,7 @@ clawshire --output json user info
 ### 公告查询
 
 ```bash
-clawshire --output json notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --page-size 3
+clawshire notice stock 603402 --start-date 2026-04-01 --end-date 2026-04-20 --page-size 3 --format json
 ```
 
 关键结果：
@@ -221,7 +221,7 @@ clawshire --output json notice stock 603402 --start-date 2026-04-01 --end-date 2
 ### 年报定位
 
 ```bash
-clawshire --output json annual-report latest --year 2025 --keyword 平安银行 --page-size 3
+clawshire annual-report latest --year 2025 --keyword 平安银行 --page-size 3 --format json
 ```
 
 关键结果：
@@ -242,7 +242,7 @@ clawshire --output json annual-report latest --year 2025 --keyword 平安银行 
 ### 年报分析提交
 
 ```bash
-clawshire --output json annual-analysis company 000001 --year 2025
+clawshire annual-analysis company 000001 --year 2025 --format json
 ```
 
 关键结果：
@@ -258,7 +258,7 @@ clawshire --output json annual-analysis company 000001 --year 2025
 继续查询状态：
 
 ```bash
-clawshire --output json annual-analysis get 74
+clawshire annual-analysis get 74 --format json
 ```
 
 当次返回：

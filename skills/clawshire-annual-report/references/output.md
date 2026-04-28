@@ -11,5 +11,5 @@
 若输出给脚本或 Agent，优先使用：
 
 ```bash
-clawshire --output json ...
+clawshire ... --format json
 ```

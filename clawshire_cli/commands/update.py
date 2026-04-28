@@ -9,7 +9,7 @@ from argparse import ArgumentParser, Namespace, _SubParsersAction
 import httpx
 from packaging.version import Version
 
-from clawshire_cli.context import resolve_output
+from clawshire_cli.context import add_format_args, resolve_format
 from clawshire_cli.output import render
 from clawshire_sdk import ClawShireApiError, ClawShireNetworkError
 
@@ -42,53 +42,76 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
         action="store_true",
         help="跳过确认提示，直接执行升级",
     )
+    add_format_args(parser)
     parser.set_defaults(handler=_handle_update)
 
 
 def _handle_update(args: Namespace) -> int:
+    output = resolve_format(args)
     current_version = _read_current_version()
+
+    # non-table output: keep structured payload mode
+    if output != "table":
+        latest_version, version_source = _read_latest_version()
+        manager = _resolve_manager(args.manager)
+        command = _build_update_command(manager)
+        payload: dict[str, Any] = {
+            "current_version": current_version,
+            "latest_version": latest_version,
+            "version_source": version_source,
+            "project_url": PYPI_PROJECT_URL,
+            "manager": manager,
+            "command": " ".join(command),
+            "dry_run": args.dry_run,
+        }
+        if latest_version is not None and Version(current_version) >= Version(latest_version):
+            payload["message"] = "Already up to date."
+        elif args.dry_run:
+            payload["message"] = "New version available (dry-run, not installing)"
+        else:
+            payload["message"] = "New version available, installing..."
+        render(payload, output=output)
+        return 0
+
+    # table (default): streaming progress output like `claude update`
+    print(f"Current version: {current_version}")
+    print("Checking for updates to latest version...")
+
     latest_version, version_source = _read_latest_version()
     manager = _resolve_manager(args.manager)
     command = _build_update_command(manager)
-    payload = {
-        "current_version": current_version,
-        "latest_version": latest_version,
-        "version_source": version_source,
-        "project_url": PYPI_PROJECT_URL,
-        "manager": manager,
-        "command": " ".join(command),
-        "dry_run": args.dry_run,
-    }
 
     if latest_version is not None and Version(current_version) >= Version(latest_version):
-        payload["message"] = "当前已经是最新版本"
-        render(payload, output=resolve_output(args))
-        return 0
-
-    if args.dry_run:
-        if latest_version is None:
-            payload["message"] = "暂时无法从 PyPI 确认最新版本，可执行以下命令尝试升级"
-        else:
-            payload["message"] = "检测到新版本，可执行以下命令升级当前 CLI"
-        render(payload, output=resolve_output(args))
+        print(f"Already up to date. (latest: {latest_version})")
         return 0
 
     if latest_version is None:
-        payload["message"] = "暂时无法从 PyPI 确认最新版本，准备尝试升级 clawshire-cli"
+        print("Unable to confirm latest version from PyPI, attempting upgrade anyway...")
     else:
-        payload["message"] = "检测到新版本，准备升级 clawshire-cli"
-    render(payload, output=resolve_output(args))
+        print(f"New version available: {latest_version} (current: {current_version})")
+
+    if args.dry_run:
+        print(f"Dry-run — would execute: {' '.join(command)}")
+        return 0
 
     if not args.yes and not _confirm_upgrade(command):
-        print("已取消升级。")
+        print("Upgrade cancelled.")
         return 1
+
+    print("Installing update...")
+    print(f"Using {_manager_label(manager)} update method...")
 
     result = subprocess.run(command, check=False)
     if result.returncode != 0:
-        raise ClawShireApiError(f"升级失败，请手动执行: {' '.join(command)}")
+        raise ClawShireApiError(f"Upgrade failed. Run manually: {' '.join(command)}")
 
-    print("升级命令执行完成。建议重新运行 `clawshire version` 确认版本。")
+    print("Update complete. Run `clawshire version` to confirm.")
     return 0
+
+
+def _manager_label(manager: str) -> str:
+    labels = {"uv": "uv tool upgrade", "pipx": "pipx upgrade", "pip": "pip install --upgrade"}
+    return labels.get(manager, manager)
 
 
 def _resolve_manager(preferred: str) -> str:

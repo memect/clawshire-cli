@@ -13,9 +13,9 @@ run() {
 
 run_annual_analysis_smoke() {
   echo
-  echo "==> $CLI_BIN --output json annual-analysis company 000001 --year 2025"
+  echo "==> $CLI_BIN annual-analysis company 000001 --year 2025 --format json"
   local output
-  if output="$("$CLI_BIN" --output json annual-analysis company 000001 --year 2025 2>&1)"; then
+  if output="$("$CLI_BIN" annual-analysis company 000001 --year 2025 --format json 2>&1)"; then
     printf '%s\n' "$output"
     return 0
   fi

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
-from clawshire_cli.context import build_client, resolve_output
+from clawshire_cli.context import add_format_args, build_client, resolve_format
 from clawshire_cli.output import render
 
 
@@ -16,10 +16,12 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     latest.add_argument("--year", type=int, help="年份，如 2025")
     latest.add_argument("--exchange", help="交易所，如 bj")
     latest.add_argument("--keyword", help="关键词或公司代码")
+    add_format_args(latest)
     latest.set_defaults(handler=_handle_latest)
 
     data = annual_report_subparsers.add_parser("data", help="获取年报结构化数据")
     data.add_argument("met_uuid", help="年报 met_uuid")
+    add_format_args(data)
     data.set_defaults(handler=_handle_data)
 
 
@@ -32,12 +34,12 @@ def _handle_latest(args: Namespace) -> int:
         exchange=args.exchange,
         keyword=args.keyword,
     )
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 
 def _handle_data(args: Namespace) -> int:
     client = build_client(args)
     data = client.annual.data(args.met_uuid)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0

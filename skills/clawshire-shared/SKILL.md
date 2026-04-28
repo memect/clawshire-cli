@@ -20,9 +20,10 @@ metadata:
 1. 先确认运行前提：`clawshire` 是否可用、是否需要 API Key、输出格式该选什么。
 2. 永远不要明文回显 API Key，只能展示掩码或提醒用户自行配置。
 3. 对 `user info`、`annual-report`、`annual-analysis` 这类需要认证的命令，优先建议先跑 `clawshire auth status` 或 `clawshire auth check`。
-4. 面向脚本或 Agent，优先用 `clawshire --output json ...`；面向终端用户阅读，优先用默认表格输出。
+4. 面向脚本或 Agent，优先在具体命令后加 `--format json`；面向终端用户阅读，优先用默认表格输出。
 5. 对会产生费用、上传文件、提交分析任务、批量查询的命令，先说明行为，不要在用户意图不明确时自动扩大范围。
-6. 如果用户只是问“怎么配”“为什么报错”“怎么升级”，先用本技能，不要直接跳到业务型 skill。
+6. Agent 被阻塞、反复绕路、工具结果不可用或能力缺失时，用 `clawshire agent feedback` 提交结构化反馈。
+7. 如果用户只是问“怎么配”“为什么报错”“怎么升级”，先用本技能，不要直接跳到业务型 skill。
 
 ## Quick Reference
 
@@ -37,17 +38,18 @@ metadata:
 | 清除 API Key | `clawshire auth logout` |
 | 升级 CLI | `clawshire update` |
 | 只看升级命令 | `clawshire update --dry-run` |
+| 提交 Agent 阻塞反馈 | `clawshire agent feedback --intent <text> --blocked-by <text> --expected-capability <text>` |
 
 ## Output Modes
 
 | 目标 | 推荐写法 |
 |------|----------|
 | 给人看 | `clawshire ...` |
-| 给脚本或 Agent 消费 | `clawshire --output json ...` |
-| 写到文档或聊天里 | `clawshire --output markdown ...` |
-| 导出表格 | `clawshire --output csv ...` |
+| 给脚本或 Agent 消费 | `clawshire <command> --format json` |
+| 写到文档或聊天里 | `clawshire <command> --format markdown` |
+| 导出表格 | `clawshire <command> --format csv` |
 
-总规则：不要依赖默认格式推断，想要结构化结果时显式加 `--output json`。
+总规则：不要依赖默认格式推断，想要结构化结果时显式加 `--format json` 或 `--json`。
 
 ## Decision Tree
 
@@ -55,6 +57,7 @@ metadata:
 用户现在要做什么？
 ├── 先安装 / 升级 CLI → 检查 `clawshire --help` 或 `clawshire update`
 ├── 配 API Key / 查认证状态 → 用 `auth show/status/check/logout`
+├── Agent 卡住 / 工具能力缺失 → 用 `agent feedback`
 ├── 问公告怎么查 → 切到 clawshire-data-query
 ├── 问年报怎么查 → 切到 clawshire-annual-report
 └── 问年报分析怎么做 → 切到 clawshire-annual-analysis
@@ -84,6 +87,12 @@ clawshire user info
 ```bash
 clawshire update --dry-run
 clawshire update
+```
+
+### Agent 被阻塞时提交反馈
+
+```bash
+clawshire agent feedback --intent "用户想完成的任务" --attempted '["已经尝试的命令或工具"]' --blocked-by "阻塞点" --expected-capability "期望 ClawShire 提供的能力" --related-tool notice.search --severity medium --format json
 ```
 
 ## References

@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from argparse import ArgumentParser, Namespace, _SubParsersAction
 
-from clawshire_cli.context import build_client, resolve_output
+from clawshire_cli.context import add_format_args, build_client, resolve_format
 from clawshire_cli.output import render
 
 
@@ -15,11 +15,13 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     pdf_file = annual_analysis_subparsers.add_parser("pdf-file", help="通过本地 PDF 文件提交分析")
     pdf_file.add_argument("pdf_path", help="本地 PDF 路径")
     _add_job_submit_args(pdf_file)
+    add_format_args(pdf_file)
     pdf_file.set_defaults(handler=_handle_pdf_file)
 
     pdf_url = annual_analysis_subparsers.add_parser("pdf-url", help="通过 PDF 链接提交分析")
     pdf_url.add_argument("pdf_url", help="PDF 直链")
     _add_job_submit_args(pdf_url)
+    add_format_args(pdf_url)
     pdf_url.set_defaults(handler=_handle_pdf_url)
 
     company = annual_analysis_subparsers.add_parser("company", help="通过公司代码或简称分析最新年报")
@@ -27,11 +29,13 @@ def register(subparsers: _SubParsersAction[ArgumentParser]) -> None:
     company.add_argument("--year", type=int, help="年份，如 2025")
     company.add_argument("--exchange", choices=["sz", "sh", "bj"], help="交易所过滤")
     company.add_argument("--notify-email", help="分析完成后通知邮箱")
+    add_format_args(company)
     company.set_defaults(handler=_handle_company)
 
     get_cmd = annual_analysis_subparsers.add_parser("get", help="查询年报分析任务")
     get_cmd.add_argument("task_or_job_id", help="分析任务 ID。支持 direct job_id 或 company task_id")
     get_cmd.add_argument("--save-report-to", help="已完成时将 HTML 报告保存到指定路径")
+    add_format_args(get_cmd)
     get_cmd.set_defaults(handler=_handle_get)
 
 
@@ -65,7 +69,7 @@ def _handle_company(args: Namespace) -> int:
         notify_email=args.notify_email,
     )
     data = _attach_follow_up_command(data, id_key="task_id")
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 
@@ -76,7 +80,7 @@ def _handle_get(args: Namespace) -> int:
         data = _maybe_download_report(client, data, args)
     else:
         data = client.annual.analyze_get(args.task_or_job_id)
-    render(data, output=resolve_output(args))
+    render(data, output=resolve_format(args))
     return 0
 
 
@@ -111,12 +115,12 @@ def _attach_follow_up_command(data: dict, *, id_key: str) -> dict:
 
 def _render_or_wait_job(client, data: dict, args: Namespace) -> int:
     if not args.wait:
-        render(data, output=resolve_output(args))
+        render(data, output=resolve_format(args))
         return 0
 
     job_id = data.get("job_id")
     if not job_id:
-        render(data, output=resolve_output(args))
+        render(data, output=resolve_format(args))
         return 0
 
     for attempt in range(args.max_polls):
@@ -124,7 +128,7 @@ def _render_or_wait_job(client, data: dict, args: Namespace) -> int:
         status = result.get("status", "unknown")
         print(f"[{attempt + 1}/{args.max_polls}] status={status}")
         if status in {"completed", "failed"}:
-            render(result, output=resolve_output(args))
+            render(result, output=resolve_format(args))
             return 0
         time.sleep(args.poll_interval)
 

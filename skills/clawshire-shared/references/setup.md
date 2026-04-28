@@ -55,12 +55,29 @@ clawshire auth check
 ## 输出格式
 
 - 默认输出：给人看，适合终端阅读
-- `--output json`：给脚本或 Agent 消费
-- `--output markdown`：适合粘贴到文档或对话中
-- `--output csv`：适合导出表格
+- `--format json` / `--json`：给脚本或 Agent 消费
+- `--format markdown`：适合粘贴到文档或对话中
+- `--format csv`：适合导出表格
 
 示例：
 
 ```bash
-clawshire --output json user info
+clawshire user info --format json
+```
+
+## Agent Attribution
+
+Agent 或 Skill 调用 CLI 前，尽量设置来源和意图，便于后端观测：
+
+```bash
+export CLAWSHIRE_CLIENT=skill
+export CLAWSHIRE_AGENT_NAME="<agent-name>"
+export CLAWSHIRE_RATIONALE="<why-this-tool-is-called>"
+export CLAWSHIRE_TRACE_ID="<trace-id>"
+```
+
+若工具调用被阻塞，提交结构化反馈：
+
+```bash
+clawshire agent feedback --intent "用户想完成的任务" --blocked-by "阻塞点" --expected-capability "期望能力" --related-tool notice.search --format json
 ```

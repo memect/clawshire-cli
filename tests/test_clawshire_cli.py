@@ -37,6 +37,31 @@ def test_build_parser_supports_filings_search():
     assert args.start_date == "2026-04-01"
 
 
+def test_build_parser_supports_leaf_format_option():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "notice",
+            "search",
+            "--start-date",
+            "2026-04-01",
+            "--end-date",
+            "2026-04-19",
+            "--format",
+            "json",
+        ]
+    )
+    assert args.format == "json"
+    assert args.json is False
+
+
+def test_build_parser_supports_json_shortcut():
+    parser = build_parser()
+    args = parser.parse_args(["user", "info", "--json"])
+    assert args.format is None
+    assert args.json is True
+
+
 def test_build_parser_supports_annual_report_latest():
     parser = build_parser()
     args = parser.parse_args(["annual-report", "latest", "--year", "2025"])
@@ -104,6 +129,36 @@ def test_build_parser_supports_user_info():
     args = parser.parse_args(["user", "info"])
     assert args.command == "user"
     assert args.user_command == "info"
+
+
+def test_build_parser_supports_agent_feedback():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "agent",
+            "feedback",
+            "--intent",
+            "查公告风险",
+            "--blocked-by",
+            "缺少公告分类",
+            "--expected-capability",
+            "提供风险事件时间线",
+            "--related-tool",
+            "notice.search",
+            "--severity",
+            "high",
+            "--format",
+            "json",
+        ]
+    )
+    assert args.command == "agent"
+    assert args.agent_command == "feedback"
+    assert args.intent == "查公告风险"
+    assert args.blocked_by == "缺少公告分类"
+    assert args.expected_capability == "提供风险事件时间线"
+    assert args.related_tool == "notice.search"
+    assert args.severity == "high"
+    assert args.format == "json"
 
 
 def test_build_parser_supports_update():
