@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### ✨ Features
+
+- `feedback` 命令：提交 Agent 执行反馈（--job-id / --agent / --rating / --comment）
+- `auth` 交互式引导配置，首次运行无配置时自动提示输入 API Key
+- `auth` 命令提示语改为英文，提升国际化体验
+- `--output` / `-o` 格式参数支持 `json` / `text` / `markdown`
+
+### 📝 Documentation
+
+- README 更新开源仓库地址（memect/clawshire-cli），补充 GitHub stars 徽章
+- README 改写为公开发布版本，补充安装说明与快速上手示例
+
 ## [0.1.0] - 2026-04-27
 
 ### ✨ Features
