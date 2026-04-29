@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### 📝 Documentation
+
+- README 精简安装说明，按"个人用户/AI Agent"两条路径重构快速上手
+- README 新增 Star History 区块
+- README 新增"通过自然语言让 Agent 安装和使用"小节，提供通用安装资源模板
+- pyproject.toml 新增 `[project.urls]`（Homepage/Repository/Issues/Changelog）
+
 ## [0.2.0] - 2026-04-28
 
 ### ✨ Features
