@@ -14,6 +14,12 @@ dependencies = [
     "tomli-w>=1.2.0",
 ]
 
+[project.urls]
+Homepage = "https://clawshire.cn"
+Repository = "https://github.com/memect/clawshire-cli"
+Issues = "https://github.com/memect/clawshire-cli/issues"
+Changelog = "https://github.com/memect/clawshire-cli/blob/main/CHANGELOG.md"
+
 [project.scripts]
 clawshire = "clawshire_cli.main:main"
 cs = "clawshire_cli.main:main"

@@ -46,76 +46,46 @@ ClawShire 面向上市公司信息披露数据的程序化使用场景。A 股�
 
 ---
 
-## 使用说明
+## 安装 & 快速上手
 
-这个仓库提供开源的 CLI、Python SDK、Agent Skills 和使用文档。安装后，你可以在终端、脚本或 AI Agent 工作流中调用 ClawShire 的公告查询、年报查询和年报 AI 分析能力。
-
-这些能力会连接到 ClawShire 在线服务，默认 API 地址是 `https://api.clawshire.cn`。首次使用需要 API Key，可以在 <https://clawshire.cn> 获取。不同账号的可用功能、额度和访问频率可能不同，以你的账号配置为准。
-
----
-
-## 安装
+安装后可在终端、脚本或 AI Agent 工作流中调用 ClawShire 的公告查询、年报查询和年报 AI 分析能力。首次使用需要 API Key，可在 <https://clawshire.cn> 获取。
 
 要求：`Python >= 3.12`
 
-推荐使用 `uv`（隔离环境）：
-
 ```bash
+# 推荐（uv 隔离环境）
 uv tool install clawshire-cli
-```
 
-或使用 pip：
-
-```bash
+# 或 pip
 pip install clawshire-cli
 ```
 
-安装后提供两个等价入口：
+安装后提供两个等价入口：`clawshire` 和 `cs`。升级：`clawshire update`
+
+### 个人用户（3 步）
 
 ```bash
-clawshire --help
-cs --help
-```
-
-升级：
-
-```bash
-clawshire update
-```
-
----
-
-## 快速上手
-
-```bash
-# 1. 注册并获取 API Key：https://clawshire.cn
-# 2. 交互式配置（推荐）
+# 第 1 步：注册并获取 API Key：https://clawshire.cn
+# 第 2 步：配置认证（交互式引导）
 clawshire auth
-# 或直接传入 Key
-clawshire auth set-key <your_api_key>
-# 3. 验证
+
+# 第 3 步：验证并开始使用
 clawshire user info
-# 4. 查公告
-clawshire notice search --start-date 2025-01-01 --end-date 2025-01-31 --keyword 603402
-# 5. 查年报
-clawshire annual-report latest --year 2025 --keyword 平安银行
-# 6. 发起年报 AI 分析
-clawshire annual-analysis company 000001 --year 2025
+clawshire notice search --start-date 2025-01-01 --end-date 2025-01-31 --keyword 000001
 ```
 
-### 在 AI Agent 中使用
-
-配置 API Key 后即可在 Agent 工作流中直接调用：
+### AI Agent（3 步）
 
 ```bash
-export CLAWSHIRE_API_KEY="<your_api_key>"
-clawshire auth check   # 退出码 0 = 认证可用
-```
-
-推荐安装配套 Skills bundle，让 Agent 直接调用工作流：
-
-```bash
+# 第 1 步：安装 CLI 和 Skills bundle
+pip install clawshire-cli
 npx skills add memect/clawshire-cli -y -g
+
+# 第 2 步：配置 API Key（环境变量，推荐）
+export CLAWSHIRE_API_KEY="<your_api_key>"
+
+# 第 3 步：验证认证可用性（退出码 0 = 可用）
+clawshire auth check
 ```
 
 ---
@@ -434,3 +404,9 @@ clawshire notice search --start-date 2026-04-19 --end-date 2026-04-20 --format j
 ```bash
 clawshire annual-report latest --year 2025 --keyword 000001
 ```
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=memect/clawshire-cli&type=Date)](https://star-history.com/#memect/clawshire-cli&Date)
