@@ -88,6 +88,22 @@ export CLAWSHIRE_API_KEY="<your_api_key>"
 clawshire auth check
 ```
 
+### 通过自然语言让 Agent 安装和使用
+
+如果使用 Claude Code、Cursor、Codex 等支持 Shell 的 Agent，可以直接把安装资源交给 Agent，让它完成安装、认证和后续任务：
+
+```text
+安装资源：
+- CLI 包名：clawshire-cli
+- PyPI：https://pypi.org/project/clawshire-cli/
+- GitHub：https://github.com/memect/clawshire-cli
+- Skills bundle：memect/clawshire-cli
+
+请先检查本机是否已有 clawshire 或 cs 命令；如果没有，优先用 uv tool install clawshire-cli 安装，或用 pip install clawshire-cli 安装。然后安装配套 Skills：npx skills add memect/clawshire-cli -y -g。API Key 可在 https://clawshire.cn 获取；认证使用 CLAWSHIRE_API_KEY，并用 clawshire auth check 验证。
+```
+
+把上面的安装资源和你的任务目标一起发给 Agent，它会自动完成安装检查、认证配置和后续调用。
+
 ---
 
 ## 认证
