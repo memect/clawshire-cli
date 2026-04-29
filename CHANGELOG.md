@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-04-29
+
 ### 📝 Documentation
 
 - README 精简安装说明，按"个人用户/AI Agent"两条路径重构快速上手
