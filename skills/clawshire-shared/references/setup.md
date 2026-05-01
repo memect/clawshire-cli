@@ -70,10 +70,24 @@ clawshire user info --format json
 Agent 或 Skill 调用 CLI 前，尽量设置来源和意图，便于后端观测：
 
 ```bash
-export CLAWSHIRE_CLIENT=skill
-export CLAWSHIRE_AGENT_NAME="<agent-name>"
-export CLAWSHIRE_RATIONALE="<why-this-tool-is-called>"
-export CLAWSHIRE_TRACE_ID="<trace-id>"
+clawshire \
+  --client skill \
+  --skill-name "<skill-name>" \
+  --agent-name "<agent-name-or-unknown-agent>" \
+  --rationale "<why-this-tool-is-called>" \
+  --trace-id "<trace-id>" \
+  <command>
+```
+
+若调用环境不方便传全局参数，也可以使用等价环境变量：
+
+```bash
+CLAWSHIRE_CLIENT=skill \
+CLAWSHIRE_SKILL_NAME="<skill-name>" \
+CLAWSHIRE_AGENT_NAME="<agent-name-or-unknown-agent>" \
+CLAWSHIRE_RATIONALE="<why-this-tool-is-called>" \
+CLAWSHIRE_TRACE_ID="<trace-id>" \
+clawshire <command>
 ```
 
 若工具调用被阻塞，提交结构化反馈：

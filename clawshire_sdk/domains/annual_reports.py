@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import httpx
 
 from clawshire_sdk.errors import ClawShireApiError, ClawShireNetworkError
+from clawshire_sdk.search_normalization import normalize_search_text
 
 
 class AnnualReportsDomain:
@@ -130,11 +131,15 @@ class AnnualReportsDomain:
     @staticmethod
     def _pick_report(items: list[dict[str, Any]], keyword: str) -> dict[str, Any]:
         normalized = keyword.strip().lower()
+        normalized_for_search = normalize_search_text(keyword)
         for item in items:
             if str(item.get("company_code", "")).strip().lower() == normalized:
                 return item
         for item in items:
             if str(item.get("company_name", "")).strip().lower() == normalized:
+                return item
+        for item in items:
+            if normalize_search_text(item.get("company_name", "")) == normalized_for_search:
                 return item
         return items[0]
 

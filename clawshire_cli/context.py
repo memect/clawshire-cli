@@ -20,7 +20,16 @@ def build_client(args: Namespace) -> ClawShireClient:
     base_url = args.base_url or config.base_url
     api_key = args.api_key if args.api_key is not None else config.api_key
     timeout = args.timeout if args.timeout is not None else config.timeout
-    return ClawShireClient(base_url=base_url, api_key=api_key, timeout=timeout)
+    return ClawShireClient(
+        base_url=base_url,
+        api_key=api_key,
+        timeout=timeout,
+        client_name=getattr(args, "client", None),
+        skill_name=getattr(args, "skill_name", None),
+        agent_name=getattr(args, "agent_name", None),
+        rationale=getattr(args, "rationale", None),
+        trace_id=getattr(args, "trace_id", None),
+    )
 
 
 def add_format_args(parser: ArgumentParser) -> None:

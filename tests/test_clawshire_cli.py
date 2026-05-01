@@ -62,6 +62,35 @@ def test_build_parser_supports_json_shortcut():
     assert args.json is True
 
 
+def test_build_parser_supports_attribution_options():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "--client",
+            "skill",
+            "--skill-name",
+            "clawshire-data-query",
+            "--agent-name",
+            "codex",
+            "--rationale",
+            "search filings for the user task",
+            "--trace-id",
+            "tr-test",
+            "notice",
+            "search",
+            "--start-date",
+            "2026-04-01",
+            "--end-date",
+            "2026-04-19",
+        ]
+    )
+    assert args.client == "skill"
+    assert args.skill_name == "clawshire-data-query"
+    assert args.agent_name == "codex"
+    assert args.rationale == "search filings for the user task"
+    assert args.trace_id == "tr-test"
+
+
 def test_build_parser_supports_annual_report_latest():
     parser = build_parser()
     args = parser.parse_args(["annual-report", "latest", "--year", "2025"])
@@ -200,6 +229,15 @@ def test_default_report_filename_uses_company_name():
     assert filename == "平安银行-10fd860b-c12e-54b3-a5b3-38c2ecdf5b2b.html"
 
 
+def test_pick_report_matches_spaced_company_name():
+    items = [
+        {"company_code": "000001", "company_name": "平 安 银 行"},
+        {"company_code": "000858", "company_name": "五 粮 液"},
+    ]
+
+    assert AnnualReportsDomain._pick_report(items, "五粮液")["company_code"] == "000858"
+
+
 def test_attach_follow_up_command_for_task_id():
     data = _attach_follow_up_command({"task_id": 74, "message": "分析任务已提交，请稍后查看结果"}, id_key="task_id")
     assert data["next_command"] == "clawshire annual-analysis get 74"
@@ -243,6 +281,7 @@ def test_get_cli_version():
 
 def test_client_build_headers_include_agent_attribution(monkeypatch):
     monkeypatch.setenv("CLAWSHIRE_CLIENT", "skill")
+    monkeypatch.setenv("CLAWSHIRE_SKILL_NAME", "clawshire-data-query")
     monkeypatch.setenv("CLAWSHIRE_AGENT_NAME", "research-agent")
     monkeypatch.setenv("CLAWSHIRE_RATIONALE", "查询候选公告以判断风险")
     monkeypatch.setenv("CLAWSHIRE_TRACE_ID", "tr-test")
@@ -253,6 +292,7 @@ def test_client_build_headers_include_agent_attribution(monkeypatch):
     assert headers["User-Agent"] == "clawshire-skill/test"
     assert headers["X-ClawShire-Client"] == "skill"
     assert headers["X-ClawShire-Client-Version"] == "test"
+    assert headers["X-ClawShire-Skill-Name"] == "clawshire-data-query"
     assert headers["X-ClawShire-Agent-Name"] == "research-agent"
     assert base64.urlsafe_b64decode(headers["X-ClawShire-Rationale-B64"]).decode("utf-8") == "查询候选公告以判断风险"
     assert headers["X-Trace-ID"] == "tr-test"

@@ -26,6 +26,7 @@ class ClawShireClient:
         timeout: float = 30.0,
         client_name: str | None = None,
         client_version: str | None = None,
+        skill_name: str | None = None,
         agent_name: str | None = None,
         rationale: str | None = None,
         trace_id: str | None = None,
@@ -36,6 +37,7 @@ class ClawShireClient:
         self.timeout = timeout
         self.client_name = client_name or os.getenv("CLAWSHIRE_CLIENT") or "cli"
         self.client_version = client_version or os.getenv("CLAWSHIRE_CLIENT_VERSION") or _read_package_version()
+        self.skill_name = skill_name or os.getenv("CLAWSHIRE_SKILL_NAME")
         self.agent_name = agent_name or os.getenv("CLAWSHIRE_AGENT_NAME")
         self.rationale = rationale or os.getenv("CLAWSHIRE_RATIONALE")
         self.trace_id = trace_id or os.getenv("CLAWSHIRE_TRACE_ID")
@@ -153,6 +155,8 @@ class ClawShireClient:
         }
         if self.agent_name:
             headers["X-ClawShire-Agent-Name"] = self.agent_name
+        if self.skill_name:
+            headers["X-ClawShire-Skill-Name"] = self.skill_name
         if self.rationale:
             try:
                 self.rationale.encode("ascii")

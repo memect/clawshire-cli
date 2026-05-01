@@ -25,6 +25,7 @@ metadata:
 4. 用户已经有 `task_id` 或 `job_id` 时，优先 `get`，不要重复提交。
 5. `pdf-url` 依赖上游 PDF 可访问；失败时优先回退到 `company` 模式。
 6. 如果服务端提示“已有分析任务在进行中”，这通常说明链路已到达服务端，重复提交没有意义。
+7. Agent 调用 CLI 时，命令前必须带 `--client skill --skill-name clawshire-annual-analysis --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call>`。
 
 ## Quick Reference
 

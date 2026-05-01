@@ -45,7 +45,7 @@ metadata:
 | 目标 | 推荐写法 |
 |------|----------|
 | 给人看 | `clawshire ...` |
-| 给脚本或 Agent 消费 | `clawshire <command> --format json` |
+| 给脚本或 Agent 消费 | `clawshire --client skill --skill-name <skill-name> --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call> <command> --format json` |
 | 写到文档或聊天里 | `clawshire <command> --format markdown` |
 | 导出表格 | `clawshire <command> --format csv` |
 
@@ -92,7 +92,7 @@ clawshire update
 ### Agent 被阻塞时提交反馈
 
 ```bash
-clawshire agent feedback --intent "用户想完成的任务" --attempted '["已经尝试的命令或工具"]' --blocked-by "阻塞点" --expected-capability "期望 ClawShire 提供的能力" --related-tool notice.search --severity medium --format json
+clawshire --client skill --skill-name <skill-name> --agent-name <agent-name-or-unknown-agent> --rationale "提交 Agent 阻塞反馈" agent feedback --intent "用户想完成的任务" --attempted '["已经尝试的命令或工具"]' --blocked-by "阻塞点" --expected-capability "期望 ClawShire 提供的能力" --related-tool notice.search --severity medium --format json
 ```
 
 ## References

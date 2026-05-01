@@ -24,6 +24,7 @@ metadata:
 3. 用户已经有 `met_uuid` 时，直接 `annual-report data`，不要重复检索列表。
 4. 如果用户最终目标是做分析，先用本技能找到目标年报，再切到 `clawshire-annual-analysis`。
 5. 返回给 Agent 时，优先 `--format json`，保留 `met_uuid`、`company_code`、`pdf_url`。
+6. Agent 调用 CLI 时，命令前必须带 `--client skill --skill-name clawshire-annual-report --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call>`。
 
 ## Quick Reference
 

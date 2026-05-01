@@ -36,6 +36,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--base-url", help="API 基础地址，如 https://api.clawshire.cn")
     parser.add_argument("--api-key", help="API Key，优先级高于本地配置")
     parser.add_argument("--timeout", type=float, help="HTTP 超时秒数")
+    parser.add_argument("--client", help="调用来源，如 cli / skill / mcp / rest")
+    parser.add_argument("--skill-name", help="Skill 名称，如 clawshire-data-query")
+    parser.add_argument("--agent-name", help="调用方 Agent 名称")
+    parser.add_argument("--rationale", help="本次调用原因，用于 Agent/Skill 观测")
+    parser.add_argument("--trace-id", help="外部传入的 trace_id，用于串联调用链")
 
     subparsers = parser.add_subparsers(dest="command", required=True)
     notice.register(subparsers)

@@ -25,6 +25,7 @@ metadata:
 4. 默认控制结果规模；若用户没有明确要全量数据，不要主动加 `--page-all`。
 5. 如果下一步目标其实是查年报或做年报分析，切到对应年报技能，不要继续在公告技能里兜圈子。
 6. 给脚本或 Agent 返回结果时，优先在具体命令后加 `--format json`。
+7. Agent 调用 CLI 时，命令前必须带 `--client skill --skill-name clawshire-data-query --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call>`。
 
 ## Quick Reference
 
