@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-05-08
+
+### ✨ Features
+
+- 新增 5 个全局 CLI 参数：`--client` / `--skill-name` / `--agent-name` / `--rationale` / `--trace-id`，便于 Agent/Skill 调用时归因到 MCP 运维台
+- `clawshire_sdk.ClawShireClient` 新增 `skill_name` 字段，自动注入 `X-ClawShire-Skill-Name` 请求头
+- 年报查询的公司名匹配新增空白归一化，兼容带字间空格的简称（如「五 粮 液」匹配「五粮液」）
+
+### 🐛 Bug Fixes
+
+- 修复 `agent feedback` 子命令的 `--trace-id` / `--agent-name` / `--client` 与全局同名参数冲突导致报错的问题（改用 argparse SUPPRESS）
+
+### 📝 Documentation
+
+- skills/SKILL.md 与 setup.md 推荐 Agent 调用时携带归因参数
+
 ## [0.2.1] - 2026-04-29
 
 ### 📝 Documentation
