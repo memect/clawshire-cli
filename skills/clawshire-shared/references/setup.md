@@ -70,13 +70,7 @@ clawshire user info --format json
 Agent 或 Skill 调用 CLI 前，尽量设置来源和意图，便于后端观测：
 
 ```bash
-clawshire \
-  --client skill \
-  --skill-name "<skill-name>" \
-  --agent-name "<agent-name-or-unknown-agent>" \
-  --rationale "<why-this-tool-is-called>" \
-  --trace-id "<trace-id>" \
-  <command>
+clawshire --client skill --skill-name <skill-name> --agent-name <agent-name-or-unknown-agent> --rationale <why-this-tool-is-called> --trace-id <trace-id> <command>
 ```
 
 若调用环境不方便传全局参数，也可以使用等价环境变量：
