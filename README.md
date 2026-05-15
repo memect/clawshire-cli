@@ -7,7 +7,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/memect/clawshire-cli)](https://github.com/memect/clawshire-cli/issues)
 [![GitHub stars](https://img.shields.io/github/stars/memect/clawshire-cli)](https://github.com/memect/clawshire-cli)
 
-**clawshire-cli** 是 ClawShire 开源的命令行工具，支持用户、开发者和 AI Agent 在终端查询 A 股上市公司的临时公告、年报数据，并发起年报智能分析。
+**clawshire-cli** 是 ClawShire 开源的命令行工具，支持用户、开发者和 AI Agent 在终端查询 A 股上市公司的临时公告、年报数据、公告 Wiki 知识库，并发起年报智能分析。
 
 相关链接：
 
@@ -25,6 +25,7 @@ ClawShire 面向上市公司信息披露数据的程序化使用场景。A 股�
 - A 股上市公司临时公告查询：按日期范围、证券代码、公司名称或公告 PDF 链接检索公告数据
 - 年报数据查询：按公司名称、证券代码、年份定位年报，并获取结构化年报数据
 - 年报数据分析：基于本地 PDF、PDF 链接或公司年报自动发起 AI 分析任务
+- 公告 Wiki 知识库：搜索公告知识页、公司画像、Tag 主题、结构化事实、反链和 Special 运营页面
 
 核心亮点：
 
@@ -42,6 +43,7 @@ ClawShire 面向上市公司信息披露数据的程序化使用场景。A 股�
 | 临时公告查询 | 按日期范围、证券代码、公司名称、PDF 链接查询沪深北三市公告 |
 | 年报查询 | 按公司名称或代码定位年报列表，获取结构化数据 |
 | 年报 AI 分析 | 上传本地 PDF、PDF 链接或按公司发起智能分析任务 |
+| 公告 Wiki | 搜索公告知识页、公司画像、Tag 主题、事实证据、反链、Special 运营页面 |
 | 用户与认证 | API Key 管理、用户信息、配额查询 |
 
 ---
@@ -140,6 +142,7 @@ clawshire --api-key <your_api_key> user info
 | `notice` | `gg` | 公告检索 |
 | `annual-report` | `ar` | 年报查询 |
 | `annual-analysis` | `aa` | 年报 AI 分析 |
+| `wiki` | — | 公告 Wiki 知识库 |
 
 ### 公告检索
 
@@ -202,6 +205,38 @@ clawshire annual-analysis get <task_id_or_job_id> --save-report-to ./report.html
 ```
 
 > `pdf-file` / `pdf-url` 返回 `job_id`；`company` 返回 `task_id`，后续查询传对应 ID。
+
+### 公告 Wiki
+
+```bash
+# 搜索公告知识页
+clawshire wiki search --code 000001 --date-from 2026-01-01
+clawshire wiki search --q 退市风险 --quality-min 3
+
+# 公告详情（含 Markdown 全文、事实、证据、关联公告）
+clawshire wiki entry <ann_id>
+
+# 公司 Wiki 画像（公告时间线、高频 Tag、事实摘要）
+clawshire wiki company 000001
+
+# Tag 主题页（涉及公司分布、共现 Tag、相关公告）
+clawshire wiki tag 退市风险
+
+# 反链查询（哪些公告引用了该公司/Tag）
+clawshire wiki backlinks company 000001
+clawshire wiki backlinks tag 退市风险
+
+# 别名/简称解析为规范页面 ID
+clawshire wiki resolve 平安银行
+
+# Special 运营页面
+clawshire wiki special statistics   # 知识库统计（公告数、覆盖率）
+clawshire wiki special doctor       # 健康检查（资产覆盖、任务延迟）
+clawshire wiki special orphans      # 孤立条目（无 Tag/无 Fact/无反链）
+clawshire wiki special freshness    # 数据新鲜度（各阶段延迟）
+clawshire wiki special tags         # Tag 词典
+clawshire wiki special companies    # 公司索引
+```
 
 ### 用户信息
 
@@ -289,10 +324,22 @@ data = client.filings.search(
 print(data["total"])
 ```
 
-SDK 暴露两组域能力：
+SDK 暴露三组域能力：
 
 - `client.filings` — 公告查询
 - `client.annual` — 年报查询与分析
+- `client.wiki` — 公告 Wiki 知识库
+
+```python
+# 搜索 Wiki 条目
+results = client.wiki.search(code="000001", date_from="2026-01-01")
+
+# 公司 Wiki 画像
+profile = client.wiki.company("000001")
+
+# Special 页面
+stats = client.wiki.special("statistics")
+```
 
 完整 SDK 文档见 [`docs/sdk-usage.md`](docs/sdk-usage.md)。
 
