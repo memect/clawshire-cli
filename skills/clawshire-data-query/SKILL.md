@@ -1,10 +1,10 @@
 ---
 name: clawshire-data-query
 version: 1.0.0
-description: "ClawShire 公告数据查询技能。通过 clawshire CLI 查询 A 股上市公司公告，支持按日期范围、证券代码、公告原文链接检索结构化提取结果。"
-triggers: ["clawshire notice", "公告查询", "查公告", "最近公告", "证券代码公告", "公告 pdf", "notice search", "notice stock", "notice link"]
+description: "ClawShire 公告数据查询技能。通过 clawshire CLI 查询 A 股上市公司公告，支持按日期范围、证券代码、公告原文链接检索结构化提取结果，并可按公告标题识别事件类型。"
+triggers: ["clawshire notice", "公告查询", "查公告", "最近公告", "证券代码公告", "公告 pdf", "notice search", "notice stock", "notice link", "notice detect-events", "公告事件识别", "事件公告"]
 invocable: true
-argument-hint: "[search|stock|link] [args...]"
+argument-hint: "[search|stock|link|detect-events] [args...]"
 metadata:
   requires:
     bins: ["clawshire"]
@@ -15,17 +15,18 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../clawshire-shared/SKILL.md`](../clawshire-shared/SKILL.md)，其中包含安装、认证、错误处理与安全规则。**
 
-通过 `clawshire` CLI 查询 A 股上市公司公告及其结构化提取结果。
+通过 `clawshire` CLI 查询 A 股上市公司公告及其结构化提取结果，并识别公告标题中的高频事件类型。
 
 ## Agent Invariants
 
-1. 先判断用户给的是日期范围、证券代码，还是公告 PDF 链接。
-2. 用户给了证券代码时，优先 `notice stock`，比裸 `search` 更收敛。
-3. 用户给了公告 PDF 直链时，直接用 `notice link`，不要先走日期搜索。
-4. 默认控制结果规模；若用户没有明确要全量数据，不要主动加 `--page-all`。
-5. 如果下一步目标其实是查年报或做年报分析，切到对应年报技能，不要继续在公告技能里兜圈子。
-6. 给脚本或 Agent 返回结果时，优先在具体命令后加 `--format json`。
-7. Agent 调用 CLI 时，命令前必须带 `--client skill --skill-name clawshire-data-query --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call>`。
+1. 先判断用户要的是“查公告列表”，还是“识别公告事件类型”。
+2. 用户明确要回购、减持、业绩预告、中标等事件归类时，优先 `notice detect-events`，不要先返回一堆原始公告再让 Agent 二次猜测。
+3. 用户给了证券代码时，优先 `notice stock` 或 `notice detect-events --sec-code`，比裸 `search` 更收敛。
+4. 用户给了公告 PDF 直链时，直接用 `notice link`，不要先走日期搜索。
+5. 默认控制结果规模；若用户没有明确要全量数据，不要主动加 `--page-all`。
+6. 如果下一步目标其实是查年报或做年报分析，切到对应年报技能，不要继续在公告技能里兜圈子。
+7. 给脚本或 Agent 返回结果时，优先在具体命令后加 `--format json`。
+8. Agent 调用 CLI 时，命令前必须带 `--client skill --skill-name clawshire-data-query --agent-name <agent-name-or-unknown-agent> --rationale <why-this-call>`。
 
 ## Quick Reference
 
@@ -34,12 +35,16 @@ metadata:
 | 按日期范围查公告 | `clawshire notice search --start-date <d> --end-date <d>` |
 | 按证券代码查公告 | `clawshire notice stock <sec_code> --start-date <d> --end-date <d>` |
 | 按 PDF 链接回查 | `clawshire notice link --met-link <url>` |
+| 识别公告事件类型 | `clawshire notice detect-events --start-date <d> --end-date <d>` |
 | 返回结构化 JSON | `clawshire notice ... --format json` |
 
 ## Decision Tree
 
 ```
 用户给了什么输入？
+├── 先要识别事件类型
+│   ├── 给了证券代码 → notice detect-events --sec-code
+│   └── 只有日期范围 / 关键词 → notice detect-events
 ├── 证券代码 + 日期范围 → notice stock
 ├── 只有日期范围 / 公告类型 / 关键词 → notice search
 ├── 公告 PDF 链接 → notice link
@@ -66,9 +71,16 @@ clawshire notice search --start-date 2026-04-01 --end-date 2026-04-20 --keyword 
 clawshire notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF --format json
 ```
 
+### 识别某家公司近期公告中的事件类型
+
+```bash
+clawshire notice detect-events --sec-code 603402 --start-date 2026-04-01 --end-date 2026-04-20 --format json
+```
+
 ## Output Rules
 
 - 面向用户：至少总结公司名、标题、公告日期、原文链接。
+- 如果执行了 `detect-events`：额外总结事件类型、命中关键词和事件计数。
 - 面向脚本：优先 `--format json`。
 - 查询范围较大时，优先先缩小日期范围或证券代码，再考虑 `--page-all`。
 

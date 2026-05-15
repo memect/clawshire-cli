@@ -19,6 +19,13 @@ EXPECTED_SKILLS = [
 RELATIVE_LINK_RE = re.compile(r"\[[^\]]+\]\((?!https?://)(?!#)([^)]+)\)")
 FENCED_CODE_RE = re.compile(r"```(?:bash|text)?\n(.*?)```", re.DOTALL)
 CLI_COMMAND_RE = re.compile(r"^\s*(clawshire|cs)\s+.+$", re.MULTILINE)
+REQUIRED_SECTION_HEADINGS = [
+    "## Agent Invariants",
+    "## Quick Reference",
+    "## Decision Tree",
+    "## Common Workflows",
+    "## References",
+]
 
 
 def read_text(path: Path) -> str:
@@ -110,6 +117,9 @@ def test_skill_readme_lists_all_skills():
     text = read_text(SKILLS_DIR / "README.md")
     for skill_name in EXPECTED_SKILLS:
         assert f"`{skill_name}`" in text
+    assert "## SKILL.md 模板约束" in text
+    assert "## 必备正文章节" in text
+    assert "## 业务型 Skill 的额外要求" in text
 
 
 def test_skill_frontmatter_and_shared_rules_are_valid():
@@ -132,12 +142,16 @@ def test_skill_frontmatter_and_shared_rules_are_valid():
         assert isinstance(requires, dict), f"{skill_md} missing requires block"
         assert requires.get("bins") == ["clawshire"]
         assert metadata.get("cliHelp", "").startswith("clawshire ")
-        assert "## Agent Invariants" in text
-        assert "## Quick Reference" in text
-        assert "## Decision Tree" in text
+
+        for heading in REQUIRED_SECTION_HEADINGS:
+            assert heading in text, f"{skill_md} missing section: {heading}"
 
         if skill_dir.name != "clawshire-shared":
             assert "../clawshire-shared/SKILL.md" in text
+            assert "## Output Rules" in text, f"{skill_md} missing Output Rules"
+            assert "--format json" in text, f"{skill_md} should include a json example"
+        else:
+            assert "## Output Modes" in text, f"{skill_md} missing Output Modes"
 
 
 def test_markdown_relative_links_resolve():

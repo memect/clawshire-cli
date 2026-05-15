@@ -40,6 +40,7 @@ fi
 cd "$ROOT_DIR"
 
 run "$VENV_BIN/pytest" -q
+run "$VENV_BIN/python" scripts/check_skill_drift.py
 run "$CLI_BIN" --help
 run "$CLI_BIN" version
 run "$CLI_BIN" auth --help

@@ -161,6 +161,12 @@ clawshire notice stock 000001 --start-date 2025-01-01 --end-date 2025-01-31
 
 # 按公告 PDF 链接查询
 clawshire notice link --met-link https://static.cninfo.com.cn/finalpage/2026-04-20/1225116956.PDF
+
+# 识别某公司公告中的事件类型
+clawshire notice detect-events --sec-code 000001 --start-date 2025-01-01 --end-date 2025-01-31
+
+# 只看特定事件类型，适合 Agent / 脚本继续处理
+clawshire notice detect-events --start-date 2025-01-01 --end-date 2025-01-31 --keyword 603402 --event-type major_contract --format json
 ```
 
 ### 年报查询

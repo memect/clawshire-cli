@@ -37,6 +37,7 @@ export CLAWSHIRE_API_KEY="<your_api_key>"
 
 ```bash
 .venv/bin/pytest -q
+.venv/bin/python scripts/check_skill_drift.py
 ```
 
 这一步现在同时覆盖：
@@ -46,6 +47,7 @@ export CLAWSHIRE_API_KEY="<your_api_key>"
 3. 每个 `SKILL.md` 的 frontmatter 校验
 4. `SKILL.md` 与 `references/` 内相对链接可达性校验
 5. skills 文档中真实 `clawshire` 示例命令的可解析性校验
+6. 如果存在派生 skill bundle，其 `metadata.sourceSkill` 来源声明校验
 
 ## 3. 本地安装 CLI
 

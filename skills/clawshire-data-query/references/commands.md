@@ -7,6 +7,7 @@
 | `clawshire notice search --start-date <d> --end-date <d>` | 按日期范围查询公告 |
 | `clawshire notice stock <sec_code> --start-date <d> --end-date <d>` | 按证券代码查询公告 |
 | `clawshire notice link --met-link <url>` | 按公告原文链接查询 |
+| `clawshire notice detect-events --start-date <d> --end-date <d>` | 识别公告标题中的高频事件类型 |
 | `clawshire notice ... --format json` | 返回结构化 JSON 供脚本或 Agent 处理 |
 
 ## 按日期查询公告
@@ -47,4 +48,17 @@ clawshire notice link --met-link <url>
 
 ```bash
 clawshire notice link --met-link http://static.cninfo.com.cn/finalpage/2026-04-20/1225124234.PDF --format json
+```
+
+## 识别公告事件类型
+
+```bash
+clawshire notice detect-events --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD>
+```
+
+示例：
+
+```bash
+clawshire notice detect-events --sec-code 603402 --start-date 2026-04-01 --end-date 2026-04-20 --format json
+clawshire notice detect-events --start-date 2026-04-01 --end-date 2026-04-20 --keyword 603402 --event-type major_contract --format json
 ```

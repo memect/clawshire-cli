@@ -4,6 +4,7 @@ import tomllib
 
 from clawshire_cli.main import build_parser, get_cli_version, run
 from clawshire_cli.commands.annual_analysis import _attach_follow_up_command
+from clawshire_cli.commands.notice import detect_events
 from clawshire_cli.commands.update import (
     _build_update_command,
     _confirm_upgrade,
@@ -130,6 +131,31 @@ def test_build_parser_supports_auth_set_key():
     assert args.command == "auth"
     assert args.auth_command == "set-key"
     assert args.api_key == "sk-test"
+
+
+def test_build_parser_supports_notice_detect_events():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "notice",
+            "detect-events",
+            "--sec-code",
+            "000001",
+            "--start-date",
+            "2026-04-01",
+            "--end-date",
+            "2026-04-30",
+            "--event-type",
+            "share_repurchase",
+            "--format",
+            "json",
+        ]
+    )
+    assert args.command == "notice"
+    assert args.notice_command == "detect-events"
+    assert args.sec_code == "000001"
+    assert args.event_type == ["share_repurchase"]
+    assert args.format == "json"
 
 
 def test_build_parser_supports_auth_status():
@@ -329,3 +355,48 @@ def test_render_json(capsys):
     render({"hello": "world"}, output="json")
     out = capsys.readouterr().out
     assert '"hello": "world"' in out
+
+
+def test_detect_events_matches_multiple_event_types():
+    result = detect_events(
+        [
+            {
+                "met_uuid": "m1",
+                "sec_code": "000001",
+                "sec_name": "平安银行",
+                "announcement_title": "平安银行：关于股份回购方案及减持计划的公告",
+                "announcement_time": "2026-04-20",
+                "pdf_url": "https://example.com/1.pdf",
+            },
+            {
+                "met_uuid": "m2",
+                "sec_code": "000001",
+                "sec_name": "平安银行",
+                "announcement_title": "平安银行：2026年第一季度业绩预告",
+                "announcement_time": "2026-04-21",
+                "pdf_url": "https://example.com/2.pdf",
+            },
+        ]
+    )
+
+    assert result["total"] == 2
+    assert result["event_counts"]["share_repurchase"] == 1
+    assert result["event_counts"]["holdings_reduction"] == 1
+    assert result["event_counts"]["earnings_forecast"] == 1
+    assert result["items"][0]["events"][0]["event_type"] == "share_repurchase"
+
+
+def test_detect_events_respects_event_type_filter():
+    result = detect_events(
+        [
+            {
+                "announcement_title": "公司关于股份回购方案及减持计划的公告",
+                "sec_code": "000001",
+            }
+        ],
+        {"share_repurchase"},
+    )
+
+    assert result["total"] == 1
+    assert result["event_counts"] == {"share_repurchase": 1}
+    assert len(result["items"][0]["events"]) == 1

@@ -35,6 +35,20 @@ flowchart LR
 
 API 是能力底座，CLI 是确定性桥接层，Skills 是 Agent 的业务操作手册。
 
+## 下一步技术待办
+
+这套三层结构已经在 `clawshire-cli` 里成立，但后续如果要继续提升 Agent 适配性，重点不在“把更多逻辑塞进 Skill”，而在补工程分层和同步机制。
+
+可直接参考：
+
+- [`anthropic-financial-services-lessons.md`](./anthropic-financial-services-lessons.md)
+
+其中重点包括：
+
+1. 为高频 workflow 补显式 `commands` 层
+2. 为未来 agent bundle 引入 `skill drift check`
+3. 为 connector / MCP 层预留扩展位，而不是把集成逻辑塞进 skill
+
 ## 为什么不是让 Agent 直接调 API？
 
 在 ClawShire 里，API 能力本身已经很完整：公告查询、年报列表、年报结构化数据、年报分析任务都可以通过服务端完成。但 Agent 直接调 API 会遇到几个问题：
