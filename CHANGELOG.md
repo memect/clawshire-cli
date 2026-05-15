@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-05-15
+
+### ✨ Features
+
+- `clawshire notice detect-events` 新子命令：按公告标题关键词识别 10 类事件类型（回购、增持、减持、业绩预告/快报、重大合同、并购重组、股权质押、监管处罚、诉讼仲裁），支持 `--event-type` 过滤，适合 Agent/脚本继续处理
+
+### 📝 Documentation
+
+- `skills/README.md` 新增 SKILL.md 模板约束文档，规范 frontmatter 字段
+- `scripts/check_skill_drift.py` 新增 Skill drift 检查脚本，校验派生 skill bundle 来源声明
+- `docs/api-cli-skills-agent.md` 补充三层结构后续技术待办
+
+## [0.2.3] - 2026-05-13
+
+### ✨ Features
+
+- 新增 `clawshire wiki` 命令组：`search`、`entry`、`facts`、`events` 四个子命令，对接 HermesHub Wiki API
+- SDK 新增 `client.wiki` 域，支持 Wiki 查询
+
+### 📝 Documentation
+
+- README 补充 Wiki 命令使用示例
+- skills/clawshire-data-query 更新路由与命令参考文档
+
 ## [0.2.2] - 2026-05-08
 
 ### ✨ Features
