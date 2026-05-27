@@ -146,6 +146,10 @@ npx skills add memect/clawshire-cli -y -g
 
 这类安装方式下，`skills/` 下的多个技能会一起进入本地环境，因此 `clawshire-shared` 这类共享技能可以作为 bundle 中的公共规则层存在。
 
+## 反馈渠道
+
+如果发现 Skill 说明不清、命令路由错误、CLI 能力缺失或 Agent 使用中被阻塞，可反馈到：agent2agi.memect@claw.163.com
+
 ## 当前技能
 
 - `clawshire-shared`

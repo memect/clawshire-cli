@@ -22,7 +22,7 @@ metadata:
 3. 对 `user info`、`annual-report`、`annual-analysis` 这类需要认证的命令，优先建议先跑 `clawshire auth status` 或 `clawshire auth check`。
 4. 面向脚本或 Agent，优先在具体命令后加 `--format json`；面向终端用户阅读，优先用默认表格输出。
 5. 对会产生费用、上传文件、提交分析任务、批量查询的命令，先说明行为，不要在用户意图不明确时自动扩大范围。
-6. Agent 被阻塞、反复绕路、工具结果不可用或能力缺失时，用 `clawshire agent feedback` 提交结构化反馈。
+6. Agent 被阻塞、反复绕路、工具结果不可用或能力缺失时，用 `clawshire agent feedback` 提交结构化反馈；如果 CLI 反馈不可用，可提示反馈到 agent2agi.memect@claw.163.com。
 7. 如果用户只是问“怎么配”“为什么报错”“怎么升级”，先用本技能，不要直接跳到业务型 skill。
 
 ## Quick Reference
@@ -39,6 +39,7 @@ metadata:
 | 升级 CLI | `clawshire update` |
 | 只看升级命令 | `clawshire update --dry-run` |
 | 提交 Agent 阻塞反馈 | `clawshire agent feedback --intent <text> --blocked-by <text> --expected-capability <text>` |
+| 反馈邮箱 | agent2agi.memect@claw.163.com |
 
 ## Output Modes
 

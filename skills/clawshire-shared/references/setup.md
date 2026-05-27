@@ -89,3 +89,5 @@ clawshire <command>
 ```bash
 clawshire agent feedback --intent "用户想完成的任务" --blocked-by "阻塞点" --expected-capability "期望能力" --related-tool notice.search --format json
 ```
+
+如果反馈命令不可用，或用户需要人工协助，提醒用户可联系：agent2agi.memect@claw.163.com
