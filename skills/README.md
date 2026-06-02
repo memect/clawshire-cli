@@ -156,6 +156,8 @@ npx skills add memect/clawshire-cli -y -g
 - `clawshire-data-query`
 - `clawshire-annual-report`
 - `clawshire-annual-analysis`
+- `clawshire-wiki`
+- `clawshire-investment`
 
 ## 后续建议
 

@@ -14,7 +14,9 @@ EXPECTED_SKILLS = [
     "clawshire-annual-analysis",
     "clawshire-annual-report",
     "clawshire-data-query",
+    "clawshire-investment",
     "clawshire-shared",
+    "clawshire-wiki",
 ]
 RELATIVE_LINK_RE = re.compile(r"\[[^\]]+\]\((?!https?://)(?!#)([^)]+)\)")
 FENCED_CODE_RE = re.compile(r"```(?:bash|text)?\n(.*?)```", re.DOTALL)

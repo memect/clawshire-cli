@@ -35,6 +35,17 @@ metadata:
 | 别名/简称解析 | `clawshire wiki resolve <公司名>` |
 | 按标签查询 | `clawshire wiki tag <tag_name>` |
 
+## Decision Tree
+
+```
+用户要查什么？
+├── 某家公司的公告列表/时间线 → wiki company <sec_code>
+├── 某条具体公告的内容/字段  → wiki entry <ann_id>
+├── 搜索某类公告             → wiki search --code / --ann-type / --q
+├── 某个主题/Tag 的公告      → wiki tag <tag_name>
+└── 不知道证券代码           → wiki resolve <公司名> 先拿 sec_code
+```
+
 ## Common Workflows
 
 ### 查某家公司的公告时间线和知识统计
@@ -56,6 +67,12 @@ clawshire wiki entry ann_20260601_000001 --format json
 ```bash
 clawshire wiki search --code 000001 --ann-type 业绩预告 --format json
 ```
+
+## Output Rules
+
+- 向用户总结公司名、公告时间线条数、高频标签。
+- 查 entry 时，至少输出标题、日期、公告类型、核心事实。
+- 给脚本/Agent 用时加 `--format json`。
 
 ## References
 
