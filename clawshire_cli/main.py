@@ -15,7 +15,7 @@ from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
-from clawshire_cli.commands import agent, annual_analysis, annual_report, auth, notice, update, user, wiki
+from clawshire_cli.commands import agent, annual_analysis, annual_report, auth, investment, notice, update, user, wiki
 from clawshire_sdk import (
     ClawShireApiError,
     ClawShireAuthError,
@@ -47,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     annual_report.register(subparsers)
     annual_analysis.register(subparsers)
     wiki.register(subparsers)
+    investment.register(subparsers)
     agent.register(subparsers)
     auth.register(subparsers)
     update.register(subparsers)

@@ -8,7 +8,7 @@ from typing import Any
 import httpx
 from importlib.metadata import PackageNotFoundError, version as package_version
 
-from clawshire_sdk.domains import AnnualReportsDomain, FilingsDomain, WikiDomain
+from clawshire_sdk.domains import AnnualReportsDomain, FilingsDomain, WikiDomain, InvestmentDomain
 from clawshire_sdk.errors import (
     ClawShireApiError,
     ClawShireAuthError,
@@ -46,6 +46,7 @@ class ClawShireClient:
         self.notice = self.filings
         self.annual = AnnualReportsDomain(self)
         self.wiki = WikiDomain(self)
+        self.investment = InvestmentDomain(self)
 
     def get(
         self,
