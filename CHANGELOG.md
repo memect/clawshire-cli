@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## [0.2.4] - 2026-05-15
+## [0.3.0] - 2026-06-02
+
+### ✨ Features
+
+- 新增 `clawshire investment` 命令组：`industries`（行业列表）、`company`（公司研判变化）、`summary`（综合研判）、`industry`（行业景气），基于价值投资方法论对公告做 delta 研判
+- SDK 新增 `client.investment` 域（`InvestmentDomain`），支持公司/行业投资逻辑查询
+- MCP 注册 `WIKI_CAPABILITIES` 和新增 `INVESTMENT_CAPABILITIES`（`list_industries` / `get_company_deltas` / `get_industry_thesis`）
+- 新增 `clawshire-wiki` 和 `clawshire-investment` 两个 Agent Skills
+
+### 📝 Documentation
+
+- README 重构：去重精简，安装和快速上手分离，命令示例紧凑化，加真实终端输出示例
+- 同步更新能力概览、命令分组表、SDK 示例和 Agent Skills 列表
+
+
 
 ### ✨ Features
 
